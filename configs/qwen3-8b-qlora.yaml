@@ -1,5 +1,5 @@
 # Phase-2 QLoRA SFT sketch for Qwen3-8B-Instruct on RTX 5060 Ti 16GB.
-# Normative intent: docs/SCOPE.md §7 Stage 1 + docs/ENV_BLACKWELL.md.
+# Normative intent: docs/SCOPE.md §7 Stage 1 + docs/ENV_BLACKWELL.md + DATA_CONTRACT §4.
 # Values are starting points; peak-VRAM smoke may tighten them.
 
 model:
@@ -30,11 +30,14 @@ lora:
     - down_proj
 
 data:
-  # Must be built from the canonical renderer (docs/DATA_CONTRACT.md).
+  # Must be built from the canonical renderer (docs/DATA_CONTRACT.md v2).
   train_file: data/processed/expert-v1/train.jsonl
   val_file: data/processed/expert-v1/val.jsonl
-  max_seq_length: 2048
+  # Measured canonical prompts are ~2.3–2.5k tokens before the assistant label.
+  # 2048 with keep_start truncation would cut the JSON label — do not lower below 4096.
+  max_seq_length: 4096
   packing: false
+  require_schema_version: v2
 
 train:
   output_dir: outputs/sft/qwen3-8b-qlora
@@ -54,16 +57,16 @@ train:
   save_steps: 200
   save_total_limit: 3
   report_to: none
-  # TRL / SFTTrainer:
+  # TRL / SFTTrainer — assistant tokens only (do not also enable completion_only_loss).
   assistant_only_loss: true
-  completion_only_loss: true
 
 eval_after_train:
   protocol: docs/EVAL_PROTOCOL.md
   fixture: ladder-4p
+  seed_range_name: ladder_sft_gate
   games: 200
-  seed_start: 100000
   vps_to_win: 10
+  fallback_policy: first_legal
 
 hardware_budget:
   device: cuda:0

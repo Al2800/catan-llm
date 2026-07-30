@@ -1,13 +1,16 @@
-# Data Contract v1
+# Data Contract v2
 
 Normative contract for trajectories, prompts, splits, and manifests.
 Implements SCOPE §4.1–4.2 and §5. If code disagrees with this doc, **this doc wins** until both are updated together.
+
+**Migration:** Phase-0 plumbing used a looser record shape labelled `schema_version: "v1"`. Those records are **not** valid for Phase-1 training. All new generation must emit **`schema_version: "v2"`**.
 
 ## 1. Goals
 
 1. Train and live play see **byte-identical prompts** for the same decision.
 2. Rerunning generation with the same config produces **identical normalized shards and splits**.
 3. Downstream training never trains on the eval holdout.
+4. Assistant labels are never truncated by `max_seq_length`.
 
 ## 2. Stable identity
 
@@ -16,12 +19,14 @@ Implements SCOPE §4.1–4.2 and §5. If code disagrees with this doc, **this do
 | `seed` | Engine RNG seed for the game |
 | `map_type` | `BASE` or `MINI` |
 | `map_hash` | Deterministic hash of land tiles / numbers / ports after map construction |
-| `bot_config` | Ordered seat list with bot kind + params (e.g. `alphabeta:depth=2`) |
+| `bot_config` | Ordered seat list with bot kind + params (e.g. `alphabeta` + `depth=2`) |
 | `bot_config_hash` | Hash of canonical JSON `bot_config` |
 | `game_key` | `sha256(f"{seed}:{map_hash}:{bot_config_hash}")` — **split key** |
 | `game_id` | Opaque UUID for logging only — **not** used for splits |
+| `prompt_version` | Semver/string constant from the renderer module (bump on any prompt text change) |
+| `renderer_version` | Alias allowed; must equal `prompt_version` if both present |
 
-## 3. Trajectory record (schema v1)
+## 3. Trajectory record (schema v2)
 
 One JSONL row per decision, written **before** the action is applied.
 
@@ -29,14 +34,15 @@ Required fields:
 
 ```json
 {
-  "schema_version": "v1",
+  "schema_version": "v2",
+  "prompt_version": "2026-07-30.1",
   "game_key": "...",
   "game_id": "...",
   "decision_idx": 0,
   "seed": 0,
   "map_type": "BASE",
   "map_hash": "...",
-  "bot_config": [{"name": "alphabeta", "params": {"depth": 2}}, "..."],
+  "bot_config": [{"name": "alphabeta", "params": {"depth": 2}}],
   "bot_config_hash": "...",
   "catanatron_commit": "82aae93...",
   "source_commit": "<git sha of catan-llm>",
@@ -59,6 +65,7 @@ Rules:
 - Unfinished games (`outcome.finished == false`) are dropped from training sets; may be kept in a `debug/` shard.
 - Opponent private hands must not appear in `state` for other colors (POV-aware).
 - `board` must contain enough static layout for the canonical renderer without a live `Game` object **or** the builder must reconstruct a `Game` and call the live renderer. Either approach is fine; **output prompts must match live play**.
+- Dataset builders reject rows with `schema_version != "v2"` or unknown `prompt_version`.
 
 ## 4. Canonical prompts
 
@@ -73,6 +80,18 @@ Forbidden for labeled SFT:
 - Compact alternate prompts that omit board layout / action formatting
 - Different action pretty-printing between train and play
 
+### Context budget
+
+Measured 2026-07-30 (SmolLM2 tokenizer; Qwen same order of magnitude):
+
+| Segment | Tokens (approx) |
+|---|---|
+| System (rules + board) | ~1250 |
+| User (state + ≤54 actions) | ~1000–1120 |
+| Total before assistant | ~2300–2500 |
+
+Therefore training configs must use **`max_seq_length >= 4096`**. Dataset build must assert that tokenized `system+user+assistant` fits without truncating the assistant span.
+
 ### Parity gate (CI + pre-scale)
 
 Sample ≥1k decisions (or all decisions from ≥20 seeded games). For each:
@@ -80,7 +99,8 @@ Sample ≥1k decisions (or all decisions from ≥20 seeded games). For each:
 1. Replay or reconstruct the pre-action game state.
 2. Render live system/user prompts.
 3. Assert equality with stored/dataset prompts.
-4. Assert `record_to_action(valid_actions[action_index])` is legal in that state.
+4. Assert `prompt_version` matches the live renderer constant.
+5. Assert `record_to_action(valid_actions[action_index])` is legal in that state.
 
 ## 5. Maps
 
@@ -96,7 +116,7 @@ If construction fails → raise. Never silently substitute BASE while writing `m
 1. Group records by `game_key`.
 2. Sort keys lexicographically.
 3. Assign fractions: train 90% / val 5% / test 5% (configurable, recorded in manifest).
-4. `eval-holdout` is a **separately generated** seed range, never overlapping training seeds.
+4. `eval-holdout` uses a **separately allocated seed range** from [`SEED_REGISTRY.md`](SEED_REGISTRY.md).
 
 Do **not** split on UUID `game_id`.
 
@@ -107,6 +127,7 @@ Drop:
 - unfinished games
 - decisions with `action_index < 0`
 - records that fail action round-trip / legality checks
+- records that fail the no-truncation check at the training `max_seq_length`
 
 Balance / oversample (targets for v1 report, not hard blockers on smoke sets):
 
@@ -120,9 +141,16 @@ Publish counts in the dataset quality report.
 
 ## 8. Tier A rationales
 
-Acceptable: feature-aware templates (pip sums, port access, blocker value, value-fn delta if available).
+Required style: feature-aware one-liners. Examples:
 
-Not sufficient for Phase-1 sign-off: `"policy selects BUILD_SETTLEMENT"` style restatements alone.
+- `"pips=13 (H+O), blocks BLUE expansion toward 2:1 O port"`
+- `"extends toward open settlement node 42; longest_road threat=4"`
+- `"robber on 6-pip wheat; steal from ORANGE (7 cards)"`
+- `"valueΔ=+0.12 vs next-best build (expert VF)"` when available
+
+Not sufficient for Phase-1 sign-off: `"policy selects BUILD_SETTLEMENT"`.
+
+Minimum features: pip sum, resource diversity, port access, blocker value, hand imbalance for trades, army/road race cues; value delta when expert exposes it (SCOPE §7.4).
 
 ## 9. Manifest (required keys)
 
@@ -130,19 +158,21 @@ Not sufficient for Phase-1 sign-off: `"policy selects BUILD_SETTLEMENT"` style r
 {
   "name": "expert-v1",
   "version": "v1",
-  "schema_version": "v1",
+  "schema_version": "v2",
+  "prompt_version": "2026-07-30.1",
   "created_at": "ISO-8601",
   "source_commit": "...",
   "catanatron_commit": "...",
   "generator_versions": {"catan_llm": "0.x"},
   "bot_config": [],
   "map_type": "BASE",
-  "seed_range": {"start": 0, "count": 1000},
+  "seed_range": {"name": "train_main", "start": 0, "count": 1000},
+  "max_seq_length": 4096,
   "num_games": 0,
   "num_decisions": 0,
   "split_counts": {"train": 0, "val": 0, "test": 0},
   "checksums": {"train.jsonl": "sha256:...", "val.jsonl": "...", "test.jsonl": "..."},
-  "quality": {"unfinished_dropped": 0, "illegal_dropped": 0, "action_type_hist": {}}
+  "quality": {"unfinished_dropped": 0, "illegal_dropped": 0, "truncated_dropped": 0, "action_type_hist": {}}
 }
 ```
 
@@ -154,8 +184,9 @@ Not sufficient for Phase-1 sign-off: `"policy selects BUILD_SETTLEMENT"` style r
 
 ## 11. Phase-1 exit checklist
 
-- [ ] ≥100k train decisions after filtering
-- [ ] Separate ≥5k-game eval holdout seed range
-- [ ] Parity gate green
+- [ ] ≥100k train decisions after filtering (`schema_version=v2`)
+- [ ] Separate ≥5k-game eval holdout from the seed registry
+- [ ] Parity gate green + matching `prompt_version`
+- [ ] No-truncation check green at `max_seq_length=4096`
 - [ ] Manifest complete + checksums
 - [ ] Quality report checked in (`docs/` or `outputs/reports/`)

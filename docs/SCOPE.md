@@ -4,11 +4,15 @@
 
 **Status:** Scope locked (see §12). Phase 0 plumbing spike landed in-repo; plan tightened after post-spike review (2026-07-30). Canonical docs now live in this `catan-llm` repository.
 
-**Companion specs (normative for implementation):**
+**Companion specs (normative for implementation — docs win over code until both update together):**
 
-- [`DATA_CONTRACT.md`](DATA_CONTRACT.md) — trajectory fields, renderer parity, splits, manifests
+- [`DATA_CONTRACT.md`](DATA_CONTRACT.md) — trajectory **schema v2**, renderer parity, splits, manifests
 - [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md) — fixed fixtures, metrics, promotion gates
 - [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md) — local 5060 Ti / PyTorch / vLLM pin plan
+- [`SEED_REGISTRY.md`](SEED_REGISTRY.md) — disjoint seed ranges (train/val/test/holdout/champion)
+- [`RL_SPEC.md`](RL_SPEC.md) — Phase-3 reward / anti-hacking skeleton (entry gate)
+- [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md) — assignable Phase 0.5 work units
+- [`../AGENTS.md`](../AGENTS.md) — handoff rules for coding agents
 - [`../configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml) — Phase-2 QLoRA training sketch
 
 ---
@@ -31,7 +35,7 @@ The end state:
 - **G2.** A fine-tuned 8–12B model whose Catan win rate beats Catanatron's strongest built-in bot (`AlphaBetaPlayer`) in head-to-head play, with statistically meaningful sample sizes.
 - **G3.** The model outputs structured, machine-parseable actions with a near-100% legality/parse rate, plus short natural-language reasoning (useful for the unstructured-data side and for debugging).
 - **G4.** Everything runnable as code: data generation, dataset builds, training configs, eval harness, and a live-spectate path.
-- **G5.** Model- and infra-portable: configs for QLoRA on a single GPU up to full fine-tuning / RL on a multi-GPU cluster.
+- **G5.** Local-first QLoRA path on a single 16GB GPU, with portable configs. Multi-GPU / full-FT is a **deferred Phase-4 rental path**, not a Phase-0–3 delivery goal.
 
 ### Non-goals (for this project)
 
@@ -39,6 +43,7 @@ The end state:
 - Human-facing trade negotiation via natural-language chat between LLMs (Catanatron's engine has no domestic player-to-player trading; we stay within the engine's action space. See §10, R6).
 - A production product/UI beyond what is needed to run and watch games.
 - Beating frontier LLMs (Claude/GPT-class) prompted as agents — interesting comparison, not a success criterion.
+- Shipping a multi-GPU training stack in the initial phases (rental scripts may appear in Phase 4).
 
 ## 3. Background and why this is differentiated
 
@@ -125,7 +130,7 @@ Normative protocol: [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md).
 
 ### 4.5 Serving + live play (`serving/`, `play/`)
 
-- `LLMPlayer`: implements Catanatron's `Player.decide(game, playable_actions)` by rendering state (**exact same renderer as training**), querying an OpenAI-compatible endpoint (vLLM server hosting the checkpoint), parsing the chosen action, with constrained output (JSON schema / grammar) and a safe fallback (first legal / highest-pip legal action) on parse failure.
+- `LLMPlayer`: implements Catanatron's `Player.decide(game, playable_actions)` by rendering state (**exact same renderer as training**), querying an OpenAI-compatible endpoint (vLLM server hosting the checkpoint), parsing the chosen action, with constrained decoding when available (see §7.3), and a locked safe fallback of **`first_legal`** (engine-ordered first playable action) on parse failure.
 - Live spectating: run games under the Catanatron web UI so matches are watchable in real time.
 - A small CLI: `play --model <ckpt> --opponents AlphaBeta,ValueFunction,Random --games 100 --watch`.
 
@@ -173,8 +178,9 @@ Candidates (final pick is a Phase-0 spike; all are fine-tunable and vLLM-servabl
 
 ### Stage 1 — SFT (behavior cloning)
 
-- Data: `expert-trajectories` + Tier A commentary (assistant = short rationale + chosen action in strict JSON), built from the **canonical renderer**.
-- Loss on assistant tokens only; 2–3 epochs; cosine LR ~1e-4 (QLoRA). Config: [`configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml).
+- Data: `expert-trajectories` + Tier A commentary (assistant = short rationale + chosen action in strict JSON), built from the **canonical renderer** (schema v2 / [`DATA_CONTRACT.md`](DATA_CONTRACT.md)).
+- Loss on **assistant tokens only** (`assistant_only_loss: true`; do **not** also set conflicting `completion_only_loss` on chat data). 2–3 epochs; cosine LR ~1e-4 (QLoRA). Config: [`configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml).
+- **Context budget (measured 2026-07-30):** canonical system ≈1.25k tokens; user ≈1.0–1.1k; total ≈2.3–2.5k before the assistant label (SmolLM2 tokenizer; Qwen same order). Therefore SFT `max_seq_length` must be **≥4096**. Truncating at 2048 with `keep_start` would cut the assistant JSON and silently destroy the learning signal.
 - Exit criteria (held-out, fallbacks counted separately):
   - model parse rate ≥ 99.5% and model legality rate ≥ 99.5% **before** fallback
   - beats `WeightedRandomPlayer` with 95% Wilson lower bound > 50% on the pre-registered ladder fixture
@@ -182,7 +188,7 @@ Candidates (final pick is a Phase-0 spike; all are fine-tunable and vLLM-servabl
 
 ### Stage 2 — RL (GRPO with verifiable rewards)
 
-Entry gate: Stage-1 exit criteria met **and** a written reward/anti-hacking spec reviewed.
+Entry gate: Stage-1 exit criteria met **and** a filled [`RL_SPEC.md`](RL_SPEC.md) (reward weights, anti-hacking tests, cost caps) reviewed.
 
 - **Prompts:** decision points sampled from games (mix of bot-generated states and on-policy states), rendered with the canonical renderer.
 - **Rollouts:** G=8–16 completions per decision via vLLM; temperature ~0.8–1.0.
@@ -200,6 +206,29 @@ Entry gate: Stage-1 exit criteria met **and** a written reward/anti-hacking spec
 
 - PPO with a learned value model (GRPO removes the critic — roughly half the memory, cleaner with binary-ish game rewards).
 - Training on full-game single-context rollouts initially (context bloat); decision-level training first, full-game trajectories as a later extension.
+
+### 7.3 Inference decoding & fallback (locked for Phases 1–2)
+
+| Setting | Locked choice |
+|---|---|
+| Fallback policy | **`first_legal`** — engine-ordered first playable action |
+| Assistant JSON | `{"action": <int>, "reasoning": "<short>"}` — reasoning **is** generated at train and inference |
+| Constrained decoding | Prefer vLLM guided JSON / structured outputs enforcing `action` ∈ `[0, n_actions)` when serving; if unavailable, temperature-0 + parser + fallback |
+| Max new tokens (play) | 128 (enough for short reasoning + JSON) |
+| Temperature (eval) | 0.0 for headline ladders unless a report says otherwise |
+
+### 7.4 Tier A rationale templates (Phase 1 minimum)
+
+Feature-aware templates only (not `"policy selects BUILD_SETTLEMENT"`). Minimum feature set:
+
+- Settlement/city: adjacent pip sum, resource diversity, port access, distance-to-opponent blocking
+- Road: extends toward settlement spot / longest-road threat
+- Robber/knight: tiles blocked (pips), steal target hand size
+- Maritime trade: hand imbalance corrected
+- Dev-card buys/plays: bank/dev-deck remaining if known, army/road race state
+- ValueFunction / AlphaBeta: include value delta when the expert exposes it
+
+Exact format strings live in [`DATA_CONTRACT.md`](DATA_CONTRACT.md) §8.
 
 ## 8. Evaluation plan
 
@@ -233,12 +262,14 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 
 ### 9.2 Software stack
 
-- Python 3.11+, `catanatron` (pinned git commit; currently `82aae93`), optional `catanatron_gym` / `gymnasium` when needed.
+- Python 3.11+, `catanatron` (pinned git commit; currently `82aae93`).
+- Decision-level training does **not** require `catanatron_gym` / Gymnasium; those remain optional later if vectorized RL needs them.
 - Training: PyTorch (Blackwell-capable build), transformers, TRL (SFT + GRPO), PEFT (LoRA/QLoRA), bitsandbytes; optional verl/OpenRLHF for scaled RL; DeepSpeed/FSDP for full-FT (rental only).
 - Serving: vLLM (OpenAI-compatible endpoint), pinned per [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md).
 - Storage: datasets as JSONL/Parquet shards + manifests (checksums required; DVC optional); checkpoints on disk/object storage.
 - Experiment tracking: **local JSON reports by default**; optional W&B later.
-- CI: unit tests for schema/renderer/parser/**prompt parity**, fast smoke tests (mini games on CPU). No HF model download in default CI.
+- CI: unit tests for schema/renderer/parser/**prompt parity**/MINI maps/contract fields; fast smoke tests on CPU. No HF 8B downloads in default CI. Known Phase-0.5 gaps should appear as failing or `xfail` tests so agents see red, not prose.
+- Seed ranges: single registry in [`SEED_REGISTRY.md`](SEED_REGISTRY.md) — never invent ad-hoc ranges in scripts.
 - **Licensing note:** Catanatron is GPL-3.0. Before publishing a combined package or redistributing binaries that link the engine, confirm distribution posture (engine as separate dependency vs combined release). Training artifacts/datasets/write-ups are separable from engine redistribution.
 
 ### 9.3 Cost shape (order of magnitude)
@@ -263,14 +294,17 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 | R9 | **Catanatron API drift** | Breakage | Pin git commit; thin adapter layer; map helpers fail loudly |
 | R10 | **Partial observability handled wrong** (opponents' hands hidden) | Unfair/incorrect training signal | Renderer hides hidden info; verifier in CI |
 | R11 | **16GB VRAM ceiling on the local card** | No local full-FT, 12B, or heavy RL | 8B-first + QLoRA; burst rentals gated on Stage-1; Blackwell pins in `ENV_BLACKWELL.md` |
-| R12 | **Train/play prompt mismatch** | SFT looks fine offline, fails live | Canonical renderer only; parity CI; block scale data until green |
+| R12 | **Train/play prompt mismatch** | SFT looks fine offline, fails live | Canonical renderer only; `prompt_version` on every record; parity CI; block scale data until green |
 | R13 | **Smoke metrics mistaken for skill** | False confidence | Separate parse/legality-before-fallback from win-rate; fixed holdouts |
 | R14 | **GPL engine redistribution ambiguity** | License conflict if packaged carelessly | Keep engine as external dependency; review before combined releases |
+| R15 | **Silent label truncation** | SFT trains with no assistant signal | Enforce `max_seq_length ≥ 4096`; assert label not truncated in dataset build |
+| R16 | **Schema / prompt version drift** | Agents write incompatible JSONL | Schema **v2**; bump `prompt_version` on any renderer text change; reject mismatched manifests |
+| R17 | **Seed-range collisions across agents** | Train/eval leakage | Only allocate from [`SEED_REGISTRY.md`](SEED_REGISTRY.md) |
 
 ## 11. Phased roadmap (deliverable-gated, not time-gated)
 
 - **Phase 0 — Foundations & spike.** *(plumbing largely complete)* Repo scaffold, pinned Catanatron, simulator adapter, trajectory schema, renderer + parser, tiny SFT smoke, eval arena v0, CI. **Exit:** end-to-end loop proven with a small model on CPU.
-- **Phase 0.5 — Contract repair & local hardware proof.** *(next, before scale)* Canonical train/play prompt parity; fix MINI maps; stable split keys; atomic shard writes; eval protocol fixtures; 8B QLoRA load/train/serve smoke on the 5060 Ti with VRAM log. **Exit:** parity tests green + local 8B smoke report checked in under `outputs/` or docs.
+- **Phase 0.5 — Contract repair & local hardware proof.** *(next, before scale — task cards in [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md))* Implement schema v2 + `prompt_version`; canonical train/play prompt parity; fix MINI maps; stable `game_key` splits; atomic shard writes; seed registry wiring; eval protocol fixtures; gate tests (parity/MINI/contract) as real CI signals; 8B QLoRA load/train/serve smoke on the 5060 Ti with VRAM log (`max_seq_length≥4096`). **Exit:** Phase 0.5 task cards Done + local 8B smoke report checked in.
 - **Phase 1 — Data engine at scale.** Bulk generation (bot ladder), dataset builder + manifests, Tier A rationales (feature-aware), immutable holdout set, dataset quality report. **Exit:** v1 dataset (≥100k train decisions + separate ≥5k-game holdout) with quality sign-off per [`DATA_CONTRACT.md`](DATA_CONTRACT.md).
 - **Phase 2 — SFT model v1.** 8B QLoRA SFT on canonical prompts, eval vs bot ladder, failure taxonomy v1. **Exit:** Stage-1 criteria in §7 / [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md).
 - **Phase 3 — RL v1.** Written reward/anti-hacking spec → GRPO loop on 8B → first champion checkpoint. Prefer rented GPU for meaningful iterations. **Exit:** ≥ AlphaBeta parity on the pre-registered fixture (≥55% / ≥1k games, Wilson LB > 50%).
@@ -303,6 +337,11 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 9. **AlphaBeta claims require a pre-registered fixture** (commit, depth, seats, maps, seeds, metrics) in [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md).
 10. **No ≥100k dataset build until local 8B QLoRA smoke succeeds** on the 5060 Ti.
 11. **Smoke parse/legality ≠ skill.** Promotion uses held-out win-rate / VP / failure taxonomy with fallbacks accounted separately.
+12. **Fallback policy → `first_legal`** (engine-ordered). Do not use highest-pip fallback unless a future protocol version changes this.
+13. **Trajectory schema → v2** for contract fields (`game_key`, `map_hash`, `prompt_version`, …). Legacy plumbing records labelled v1 are not Phase-1-valid.
+14. **SFT context → `max_seq_length ≥ 4096`** for canonical prompts; verify assistant labels are not truncated.
+15. **Seed allocation → [`SEED_REGISTRY.md`](SEED_REGISTRY.md) only.**
+16. **Docs win over code** until an agent updates both in the same change.
 
 ## 13. References
 
@@ -311,3 +350,26 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 - HexMachina / Agents of Change: [arXiv:2506.04651](https://arxiv.org/abs/2506.04651)
 - GRPO / RLVR background: [arXiv:2503.06639](https://arxiv.org/html/2503.06639v3), [awesome-RLVR](https://github.com/opendilab/awesome-RLVR)
 - Fine-tuning VRAM/cost planning: [computecomparison.com Llama fine-tuning guide](https://computecomparison.com/guides/fine-tuning-llama-cost-guide)
+
+## 14. Handoff readiness (for other agents)
+
+Ready:
+
+- Locked product decisions (model, hardware, non-goals, phases)
+- Measurable AlphaBeta / SFT gates
+- Companion contracts + Phase 0.5 task cards + `AGENTS.md`
+
+Must complete in Phase 0.5 **before** parallel scale work:
+
+1. Code matches schema **v2** / prompt parity (today's code is still v1 plumbing).
+2. Gate tests exist in CI (parity, MINI, contract fields, no-truncation).
+3. Local 8B QLoRA smoke report on the 5060 Ti.
+4. No agent invents seed ranges, fallback policy, or alternate training prompts.
+
+## 15. Plan changelog
+
+| Date | Change |
+|---|---|
+| 2026-07-30 | Initial scope locked (model, hardware, trading, Tier B deferral). |
+| 2026-07-30 | Post-spike review → Phase 0.5, DATA_CONTRACT, EVAL_PROTOCOL, ENV_BLACKWELL, QLoRA sketch. |
+| 2026-07-30 | Handoff review → schema v2 + `prompt_version`, token budget ≥4096, seed registry, locked `first_legal` fallback, softened G5, Tier A feature list, decoding locks, `AGENTS.md` / Phase 0.5 task cards / `RL_SPEC.md` skeleton, handoff readiness section. |

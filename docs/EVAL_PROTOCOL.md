@@ -17,11 +17,12 @@ Every published number must record:
 | `vps_to_win` | `10` for headline; `6`/`8` allowed for fast smoke only |
 | `seats` | ordered bot/model kinds + params |
 | `alphabeta` | **depth=2**, default value weights, `prunning=false` unless noted |
-| `seed_start` / `num_games` | contiguous range |
+| `seed_start` / `num_games` | contiguous range from [`SEED_REGISTRY.md`](SEED_REGISTRY.md) |
 | `seat_rotation` | rotate seats each game (`game_i % n_seats`) |
 | `timeout_turns` | engine `TURNS_LIMIT` (currently 1000); unfinished counted separately |
-| `decoding` | temperature, max tokens, constrained decoding on/off |
-| `fallback_policy` | `first_legal` (current) or `highest_pip_legal` |
+| `decoding` | temperature (0.0 for headline), max tokens (128), constrained decoding on/off |
+| `fallback_policy` | **`first_legal`** (locked — SCOPE §12.12) |
+| `prompt_version` | renderer constant used by the candidate |
 
 Headline “vs AlphaBeta” claims use this exact AlphaBeta config unless a report title says otherwise.
 

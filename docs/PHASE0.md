@@ -10,14 +10,21 @@ renderer + action parser, tiny SFT smoke, eval arena v0 (bot-vs-bot), CI.
 ## Status
 
 **Phase 0 plumbing: complete** (spike proves wiring).  
-**Phase 0.5 (contract repair + local 8B proof): not done** — required before Phase 1 scale.
+**Phase 0.5 (contract repair + local 8B proof): next** — required before Phase 1 scale.
 
-See plan updates in [`SCOPE.md`](SCOPE.md) §11–§12 and companion specs:
+Handoff pack:
 
-- [`DATA_CONTRACT.md`](DATA_CONTRACT.md)
-- [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md)
-- [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md)
-- [`../configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml)
+| Doc | Role |
+|---|---|
+| [`SCOPE.md`](SCOPE.md) | Goals, phases, locked decisions, handoff readiness |
+| [`DATA_CONTRACT.md`](DATA_CONTRACT.md) | Schema **v2** + parity + truncation rules |
+| [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md) | Fixtures / gates; fallback=`first_legal` |
+| [`SEED_REGISTRY.md`](SEED_REGISTRY.md) | Disjoint seed ranges |
+| [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md) | 5060 Ti validation checklist |
+| [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md) | Assignable T1–T8 cards |
+| [`RL_SPEC.md`](RL_SPEC.md) | Phase-3 entry template |
+| [`../AGENTS.md`](../AGENTS.md) | Do/don't for coding agents |
+| [`../configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml) | `max_seq_length: 4096` |
 
 ## Phase-0 decisions
 
@@ -28,6 +35,8 @@ See plan updates in [`SCOPE.md`](SCOPE.md) §11–§12 and companion specs:
 | Smoke base model | `HuggingFaceTB/SmolLM2-135M-Instruct` (prove loop; Qwen3-8B is Phase 2) |
 | Experiment tracking | Local JSON reports (`outputs/**/report.json`); W&B optional later |
 | Domestic trading | Out of scope (SCOPE §12.5) — renderer/parser omit it |
+| Fallback | `first_legal` |
+| Train context | `max_seq_length >= 4096` for canonical prompts |
 
 ## Smoke result (CPU plumbing)
 
@@ -40,19 +49,21 @@ See plan updates in [`SCOPE.md`](SCOPE.md) §11–§12 and companion specs:
 Interpretation: proves the loop wires together. It is **not** evidence of Catan skill
 (a constant legal action-0 policy can also look “legal”).
 
-## Known gaps carried into Phase 0.5
+## Known gaps → Phase 0.5 task cards
 
-From the post-spike review (must fix before ≥100k data / 8B claims):
-
-1. **Train/play prompt mismatch** — dataset builder uses a compact prompt; live play uses the full renderer.
-2. **MINI maps** — `_build_map("MINI")` does not pass `MINI_MAP_TEMPLATE` and can silently use BASE.
-3. **Splits on UUID `game_id`** — not stable across regeneration; contract requires `game_key`.
-4. **Generation deletes existing output** — not resume-safe.
-5. **No local 8B QLoRA / bitsandbytes / vLLM pin validated** on the 5060 Ti yet.
-6. **Eval lacks** VP margin, fallback-separated legality, fixed AlphaBeta fixture, promotion JSON.
-7. **Tier A rationales** are action-type restatements; Phase 1 needs feature-aware templates.
-8. **License posture** — Catanatron is GPL-3; confirm distribution model before combined packaging.
+| Gap | Task |
+|---|---|
+| Schema still v1-ish in code; contract is v2 | T1 |
+| Train/play prompt mismatch + no `prompt_version` | T2 |
+| MINI maps broken / silent fallback | T3 |
+| Splits on UUID; no seed registry wiring | T4 |
+| Generation deletes outputs | T5 |
+| Eval missing fallback-separated metrics / VP margin | T6 |
+| Gates not enforced in CI | T7 |
+| No local 8B QLoRA proof; old 2048 seq len was unsafe | T8 |
+| Tier A rationales are restatements | Phase 1 (after 0.5) |
+| GPL distribution posture | owner decision before combined packaging |
 
 ## Commands
 
-See root `README.md`.
+See root `README.md` and `AGENTS.md`.
