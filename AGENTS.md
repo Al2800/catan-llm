@@ -4,14 +4,8 @@ Read this before changing code. Normative docs win over outdated implementations
 
 ## Base branch (read first)
 
-Until PR [#1](https://github.com/Al2800/catan-llm/pull/1) is merged, **do not base work on `main`**.
-`main` may only contain the initial scope seed. Use:
-
-```text
-cursor/phase-0-foundations-9ca9
-```
-
-After merge, use `main`.
+**Work directly on `main`.** Do not open long-lived feature branches for this project
+unless the owner explicitly asks. Phase 0 foundations are already merged.
 
 ## Normative docs (in order)
 
@@ -79,12 +73,11 @@ catan-arena --games 4 --vps 6 --no-alphabeta --out outputs/arena/ci.json
 
 Training extras: `pip install -e ".[train]"` (+ bitsandbytes / Blackwell torch on the owner GPU).
 
-## Branch / PR
+## Branch / commits
 
-- Feature branches: `cursor/<descriptive-name>-9ca9` (repo convention for cloud agents)
-- Base branch: `main`
-- One task card ≈ one PR when possible
-- PR description must cite the task id (`T1`…`T8`) or SCOPE section
+- **Work on `main` only** (owner policy). Do not open long-lived feature branches.
+- Prefer small commits that cite the ticket id (`tickets/01`, `T1`, …) or SCOPE section.
+- Keep docs and code in the same commit when contracts change.
 
 ## Current code vs docs
 

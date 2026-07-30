@@ -6,7 +6,7 @@ Normative refs: [`DATA_CONTRACT.md`](DATA_CONTRACT.md), [`EVAL_PROTOCOL.md`](EVA
 [`SEED_REGISTRY.md`](SEED_REGISTRY.md), [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md),
 [`../AGENTS.md`](../AGENTS.md), [`SCOPE.md`](SCOPE.md) §14.
 
-**Base branch:** `cursor/phase-0-foundations-9ca9` until PR #1 is merged to `main`.
+**Base branch:** `main` (do not use long-lived feature branches).
 
 ## Dependency graph
 

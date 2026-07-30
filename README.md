@@ -34,7 +34,7 @@ to wire issue tracker / triage defaults for this repo.
 
 **Phase 0 plumbing complete. Phase 0.5 is the handoff surface.**
 
-**Branch:** work from `cursor/phase-0-foundations-9ca9` until [PR #1](https://github.com/Al2800/catan-llm/pull/1) is merged — `main` may still be the scope-only seed.
+**Branch:** work on `main` only (Phase 0 foundations are merged).
 
 Locked decisions (see SCOPE §12):
 

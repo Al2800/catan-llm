@@ -3,20 +3,20 @@
 Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 [`PHASE0_5_TASKS.md`](../PHASE0_5_TASKS.md).
 
-**Base branch until PR #1 merges:** `cursor/phase-0-foundations-9ca9`
+**Base branch:** `main` (no long-lived feature branches)
 
 ## How to use
 
 1. Open [`BACKLOG.md`](BACKLOG.md) (this file) for status.
 2. Pick a **frontier** ticket (`ready-for-agent`, blockers all `done`).
-3. Set that ticket’s `Status: claimed`, implement, mark `done`.
-4. Keep docs and code in the same PR when contracts change.
+3. Set that ticket’s `Status: claimed`, implement on `main`, mark `done`.
+4. Keep docs and code in the same commit when contracts change.
 
 ## Status summary
 
 | ID | Title | Phase | Status | Blocked by |
 |---|---|---|---|---|
-| [00](issues/00-merge-phase0-branch.md) | Merge Phase-0 branch to main (or pin agents to it) | Meta | ready-for-agent | — |
+| [00](issues/00-merge-phase0-branch.md) | Merge Phase-0 branch to main (or pin agents to it) | Meta | done | — |
 | [01](issues/01-schema-v2.md) | Schema v2 + identity fields | 0.5 | ready-for-agent | — |
 | [02](issues/02-mini-maps.md) | MINI maps fail-loud | 0.5 | ready-for-agent | — |
 | [03](issues/03-resume-safe-writes.md) | Resume-safe shard writes | 0.5 | ready-for-agent | — |
@@ -45,7 +45,6 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 
 ## Frontier right now (can start)
 
-- **00** — branch/merge hygiene
 - **01, 02, 03** — Wave A (parallel)
 - **09** — owner GPU anytime (blocks Phase 1)
 

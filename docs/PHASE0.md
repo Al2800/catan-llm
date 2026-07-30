@@ -11,7 +11,7 @@ renderer + action parser, tiny SFT smoke, eval arena v0 (bot-vs-bot), CI.
 
 **Phase 0 plumbing: complete** (spike proves wiring).  
 **Phase 0.5 (contract repair + local 8B proof): next** — required before Phase 1 scale.  
-**Handoff base:** `cursor/phase-0-foundations-9ca9` until PR #1 merges.
+**Handoff base:** `main` (merged).
 
 Handoff pack:
 

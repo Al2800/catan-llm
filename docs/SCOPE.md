@@ -379,7 +379,7 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 17. **Teacher observability → privileged distillation accepted.** Experts may use full `Game`; learner prompts stay POV-limited; Tier A text is POV-safe only.
 18. **Headline eval format → 4-player.** `ab-4p` / `ladder-4p` are primary; 1v1 is secondary diagnostic.
 19. **“Beats WeightedRandom” → same-fixture win-share comparison**, not absolute candidate WR > 50% in a 4p table.
-20. **Handoff base → merged `main` or explicit `cursor/phase-0-foundations-9ca9`.**
+20. **Handoff base → `main` only** (no long-lived feature branches).
 
 ## 13. References
 
@@ -393,16 +393,8 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 
 ### Branch / base of work (critical)
 
-Canonical planning + Phase-0 code currently live on branch
-`cursor/phase-0-foundations-9ca9` (PR [#1](https://github.com/Al2800/catan-llm/pull/1)).
-**`main` only has the initial scope seed unless/until that PR is merged.**
-
-Before delegating build work:
-
-1. Merge PR #1 into `main`, **or**
-2. Explicitly instruct every agent: *base branch = `cursor/phase-0-foundations-9ca9`*.
-
-Do not start Phase 0.5 agents against stale `main`.
+**Work on `main` only.** Phase 0 foundations + plan pack are merged.
+Do not create long-lived feature branches unless the owner explicitly asks.
 
 ### Ready now
 
@@ -431,3 +423,4 @@ Engineering skills are vendored under `.cursor/skills/engineering/`. They are **
 | 2026-07-30 | Post-spike review → Phase 0.5, DATA_CONTRACT, EVAL_PROTOCOL, ENV_BLACKWELL, QLoRA sketch. |
 | 2026-07-30 | Handoff review → schema v2 + `prompt_version`, token budget ≥4096, seed registry, locked `first_legal` fallback, softened G5, Tier A feature list, decoding locks, `AGENTS.md` / Phase 0.5 task cards / `RL_SPEC.md` skeleton, handoff readiness section. |
 | 2026-07-30 | Second review → privileged-teacher POV policy; Gate B win-share fix; 4p headline fixtures; 4096 VRAM caveat; assistant-mask + teacher-audit task (T9); Phase-1 cohort plan; branch/base handoff warning; Phase 0.5 dependency graph. |
+| 2026-07-30 | Phase 0 pack merged to `main`; ticket 00 done; subsequent work stays on `main`. |
