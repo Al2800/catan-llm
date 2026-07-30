@@ -7,7 +7,6 @@ Domestic negotiation trading is intentionally omitted (locked decision §12.5).
 from __future__ import annotations
 
 from catanatron.models.enums import (
-    CITY,
     DEVELOPMENT_CARDS,
     RESOURCES,
     SETTLEMENT,
@@ -21,7 +20,7 @@ SYSTEM_RULES = """You are an expert Settlers of Catan player.
 
 GAME RULES:
 Victory: First player to reach the VP target on their turn wins immediately.
-VP sources: settlement=1, city=2, longest road (5+ segments)=2, largest army (3+ knights)=2, VP dev cards=1 each.
+VP sources: settlement=1, city=2, longest road=2, largest army=2, VP cards=1 each.
 
 Resources: W=Wood, B=Brick, S=Sheep, H=Wheat, O=Ore
 Build costs: Road=W+B, Settlement=W+B+S+H, City=3O+2H, Dev card=S+H+O

@@ -112,7 +112,6 @@ def split_by_game(
     n_val = max(0, int(n * val_frac)) if n > 1 else 0
     train_ids = set(game_ids[:n_train])
     val_ids = set(game_ids[n_train : n_train + n_val])
-    test_ids = set(game_ids[n_train + n_val :])
 
     splits: dict[str, list[DecisionRecord]] = {"train": [], "val": [], "test": []}
     for gid, rows in games.items():

@@ -37,7 +37,9 @@ def _build_map(map_type: str):
                 return CatanMap.from_template("MINI")  # type: ignore[attr-defined]
             except Exception:
                 pass
-        return CatanMap.from_random_template() if hasattr(CatanMap, "from_random_template") else None
+        if hasattr(CatanMap, "from_random_template"):
+            return CatanMap.from_random_template()
+        return None
     return None  # default BASE map
 
 

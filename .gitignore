@@ -15,8 +15,7 @@ datasets/
 *.jsonl
 !data/manifests/*.jsonl
 
-# Local tooling
-.venv/
+# Local outputs / tooling
 outputs/
 
 # Model artifacts
@@ -28,7 +27,6 @@ checkpoints/
 # Experiment tracking
 wandb/
 mlruns/
-outputs/
 
 # OS / editor
 .DS_Store

@@ -17,6 +17,14 @@ renderer + action parser, tiny SFT smoke, eval arena v0 (bot-vs-bot), CI.
 | Experiment tracking | Local JSON reports (`outputs/**/report.json`); W&B optional later |
 | Domestic trading | Out of scope (SCOPE §12.5) — renderer/parser omit it |
 
+## Smoke result (this environment)
+
+`catan-sft-smoke --games 2 --max-steps 5 --max-samples 32 --eval-games 1` on CPU with
+`HuggingFaceTB/SmolLM2-135M-Instruct` completed successfully:
+
+- train loss ~1.33 over 5 steps
+- eval parse_rate **1.0**, legality_rate **1.0** (fallback covers failures; none observed)
+
 ## Commands
 
 See root `README.md`.

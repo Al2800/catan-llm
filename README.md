@@ -70,4 +70,4 @@ catan-sft-smoke --games 8 --max-steps 20 --work-dir outputs/sft_smoke
 - [x] Canonical renderer + action parser
 - [x] Eval arena v0 (bot-vs-bot)
 - [x] CI (ruff + pytest + arena smoke)
-- [ ] Tiny SFT smoke on CPU/GPU proving legality-capable play loop
+- [x] Tiny SFT smoke on CPU/GPU proving legality-capable play loop

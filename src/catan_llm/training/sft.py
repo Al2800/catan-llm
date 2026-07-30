@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 DEFAULT_SMOKE_MODEL = "HuggingFaceTB/SmolLM2-135M-Instruct"
 
 
@@ -21,6 +20,14 @@ def load_chat_jsonl(path: Path) -> list[dict]:
             if line:
                 rows.append(json.loads(line))
     return rows
+
+
+def messages_to_text(tokenizer, messages: list[dict]) -> str:
+    if getattr(tokenizer, "chat_template", None):
+        return tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=False
+        )
+    return "\n".join(f"{m['role']}: {m['content']}" for m in messages)
 
 
 def run_sft_smoke(
@@ -50,34 +57,20 @@ def run_sft_smoke(
     if not rows:
         raise ValueError(f"No training rows in {train_path}")
 
-    def to_text(example):
-        # Prefer tokenizer chat template when available; fallback to plain concat.
-        return {"messages": example["messages"]}
-
-    dataset = Dataset.from_list([to_text(r) for r in rows])
-
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    texts = [{"text": messages_to_text(tokenizer, r["messages"])} for r in rows]
+    dataset = Dataset.from_list(texts)
+
+    use_cuda = torch.cuda.is_available()
     model = AutoModelForCausalLM.from_pretrained(model_name, trust_remote_code=True)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.to(device)
+    if use_cuda:
+        model.to("cuda")
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    def formatting_func(examples):
-        texts = []
-        for messages in examples["messages"]:
-            if hasattr(tokenizer, "apply_chat_template"):
-                text = tokenizer.apply_chat_template(
-                    messages, tokenize=False, add_generation_prompt=False
-                )
-            else:
-                text = "\n".join(f"{m['role']}: {m['content']}" for m in messages)
-            texts.append(text)
-        return texts
 
     args = SFTConfig(
         output_dir=str(output_dir),
@@ -87,12 +80,14 @@ def run_sft_smoke(
         learning_rate=learning_rate,
         logging_steps=5,
         save_steps=max_steps,
-        bf16=torch.cuda.is_available(),
+        bf16=use_cuda,
         fp16=False,
         report_to="none",
         max_length=max_seq_length,
-        dataset_text_field=None,
+        dataset_text_field="text",
         packing=False,
+        use_cpu=not use_cuda,
+        gradient_checkpointing=False,
     )
 
     trainer = SFTTrainer(
@@ -100,12 +95,12 @@ def run_sft_smoke(
         args=args,
         train_dataset=dataset,
         processing_class=tokenizer,
-        formatting_func=formatting_func,
     )
     trainer.train()
-    trainer.save_model(str(output_dir / "checkpoint"))
-    tokenizer.save_pretrained(str(output_dir / "checkpoint"))
-    return output_dir / "checkpoint"
+    ckpt = output_dir / "checkpoint"
+    trainer.save_model(str(ckpt))
+    tokenizer.save_pretrained(str(ckpt))
+    return ckpt
 
 
 def local_complete_fn_from_checkpoint(checkpoint_dir: Path, max_new_tokens: int = 64):
@@ -124,7 +119,7 @@ def local_complete_fn_from_checkpoint(checkpoint_dir: Path, max_new_tokens: int 
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ]
-        if hasattr(tokenizer, "apply_chat_template"):
+        if getattr(tokenizer, "chat_template", None):
             prompt = tokenizer.apply_chat_template(
                 messages, tokenize=False, add_generation_prompt=True
             )
