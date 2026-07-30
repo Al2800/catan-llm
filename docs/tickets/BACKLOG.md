@@ -45,8 +45,8 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 
 ## Frontier right now (can start)
 
-- **07** — POV audit + assistant-mask (after 04)
-- **08** — CI gate tests (after 02, 04, 05, 06, 07)
+- **07** — POV audit + assistant-mask
+- **08** — CI gate tests (blocked on 07)
 - **09** — owner GPU (on hold / local machine; blocks Phase 1)
 
 ## Already done (not ticketed as open work)
