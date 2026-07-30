@@ -12,7 +12,21 @@ from catan_llm.sim.adapter import generate_trajectories
 
 @click.command()
 @click.option("--games", default=10, show_default=True, help="Number of games")
-@click.option("--seed", default=0, show_default=True)
+@click.option(
+    "--seed",
+    default=None,
+    type=int,
+    help="Base seed (default 0, or range start when --seed-range-name is set)",
+)
+@click.option(
+    "--seed-range-name",
+    default=None,
+    help=(
+        "Named range from docs/SEED_REGISTRY.md (e.g. train_main, hw_smoke). "
+        "SCOPE §5.2: stop at filtered decision targets — do not blindly burn "
+        "the full reserved count (e.g. 50k train_main)."
+    ),
+)
 @click.option(
     "--bots",
     default="random,weightedrandom,valuefunction,alphabeta",
@@ -41,12 +55,13 @@ from catan_llm.sim.adapter import generate_trajectories
     default=False,
     help="Wipe existing jsonl + journal before writing (explicit; never done implicitly).",
 )
-def main(games, seed, bots, map_type, vps, workers, out_path, resume, overwrite):
+def main(games, seed, seed_range_name, bots, map_type, vps, workers, out_path, resume, overwrite):
     bot_names = [b.strip() for b in bots.split(",") if b.strip()]
     summary = generate_trajectories(
         bot_names=bot_names,
         num_games=games,
         seed=seed,
+        seed_range_name=seed_range_name,
         out_path=out_path,
         map_type=map_type,
         vps_to_win=vps,

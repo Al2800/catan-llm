@@ -51,43 +51,26 @@ def decision_to_chat(
     *,
     include_rationale: bool = True,
 ) -> dict:
-    """Convert a DecisionRecord into chat messages.
+    """Convert a DecisionRecord into chat messages using stored live prompts.
 
-    Note: for SFT we reconstruct prompts from the stored structured state +
-    valid action list rather than requiring a live Game object. The live
-    renderer is used at play time; for smoke/SFT we emit a compact prompt that
-    mirrors the same action-index contract.
+    Compact alternate prompts are forbidden for labeled SFT (DATA_CONTRACT §4).
+    ``system_prompt`` / ``user_prompt`` must have been captured via
+    ``render_system_prompt`` / ``render_user_prompt`` at decision time.
     """
-    action_lines = []
-    for i, action in enumerate(record.valid_actions):
-        action_lines.append(
-            f"  [{i}] {action.action_type}"
-            + (f" {action.value}" if action.value is not None else "")
+    if not record.system_prompt or not record.user_prompt:
+        raise ValueError(
+            "decision_to_chat requires system_prompt and user_prompt from the live renderer"
         )
-    you = next(
-        (p for p in record.state.get("players", []) if p.get("color") == record.player_color),
-        {},
-    )
-    system = (
-        "You are an expert Settlers of Catan player. "
-        f"You are playing as {record.player_color}. "
-        'Respond with ONLY JSON: {"action": <index>, "reasoning": "<brief>"}.'
-    )
-    user = (
-        f"Turn {record.turn} phase={record.phase}\n"
-        f"Your status: {json.dumps(you, ensure_ascii=True)}\n"
-        f"Board buildings: {json.dumps(record.state.get('buildings', {}), ensure_ascii=True)}\n"
-        f"Robber: {record.state.get('robber')}\n"
-        "AVAILABLE ACTIONS:\n" + "\n".join(action_lines)
-    )
     reasoning = tier_a_rationale(record) if include_rationale else ""
     assistant = format_assistant_target(record.action_index, reasoning)
     return {
         "game_id": record.game_id,
+        "game_key": record.game_key,
         "decision_idx": record.decision_idx,
+        "prompt_version": record.prompt_version,
         "messages": [
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
+            {"role": "system", "content": record.system_prompt},
+            {"role": "user", "content": record.user_prompt},
             {"role": "assistant", "content": assistant},
         ],
         "meta": {
@@ -98,31 +81,36 @@ def decision_to_chat(
     }
 
 
-def split_by_game(
+def split_by_game_key(
     records: list[DecisionRecord],
     *,
     train_frac: float = 0.9,
     val_frac: float = 0.05,
 ) -> dict[str, list[DecisionRecord]]:
+    """Deterministic splits keyed by ``game_key`` (never UUID ``game_id``)."""
     games: dict[str, list[DecisionRecord]] = defaultdict(list)
     for r in records:
-        games[r.game_id].append(r)
-    game_ids = sorted(games)
-    n = len(game_ids)
+        games[r.game_key].append(r)
+    game_keys = sorted(games)
+    n = len(game_keys)
     n_train = max(1, int(n * train_frac)) if n else 0
     n_val = max(0, int(n * val_frac)) if n > 1 else 0
-    train_ids = set(game_ids[:n_train])
-    val_ids = set(game_ids[n_train : n_train + n_val])
+    train_ids = set(game_keys[:n_train])
+    val_ids = set(game_keys[n_train : n_train + n_val])
 
     splits: dict[str, list[DecisionRecord]] = {"train": [], "val": [], "test": []}
-    for gid, rows in games.items():
-        if gid in train_ids:
+    for gkey, rows in games.items():
+        if gkey in train_ids:
             splits["train"].extend(rows)
-        elif gid in val_ids:
+        elif gkey in val_ids:
             splits["val"].extend(rows)
         else:
             splits["test"].extend(rows)
     return splits
+
+
+# Back-compat alias — Phase-1 paths must use game_key (this function).
+split_by_game = split_by_game_key
 
 
 def build_chat_dataset(
@@ -133,13 +121,14 @@ def build_chat_dataset(
     version: str = "v0",
     include_rationale: bool = True,
     require_v2: bool = True,
+    seed_range: dict | None = None,
 ) -> DatasetManifest:
     records = read_jsonl(Path(trajectory_path))
     if require_v2:
         require_schema_v2(records, context="build_chat_dataset")
     # Drop decisions where action wasn't in the listed legal set.
     records = [r for r in records if r.action_index >= 0]
-    splits = split_by_game(records)
+    splits = split_by_game_key(records)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -170,12 +159,13 @@ def build_chat_dataset(
         bot_mix=bot_mix,
         bot_config=bot_config,
         seeds=seeds,
+        seed_range=seed_range,
         map_type=map_type,
         num_games=len({r.game_key for r in records}),
         num_decisions=len(records),
         split_counts=split_counts,
         checksums=checksums,
-        notes="Phase-0.5 dataset; schema v2 required; splits still by game_id until T4",
+        notes="schema v2; splits by game_key; prompts from live renderer",
     )
     (out_dir / "manifest.json").write_text(
         manifest.model_dump_json(indent=2), encoding="utf-8"

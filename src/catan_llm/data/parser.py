@@ -9,6 +9,9 @@ from typing import Any
 
 from catanatron.models.enums import Action
 
+# Locked — SCOPE §12.12 / EVAL_PROTOCOL §1.
+FALLBACK_POLICY = "first_legal"
+
 _JSON_RE = re.compile(r"\{.*\}", re.DOTALL)
 
 

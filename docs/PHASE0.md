@@ -54,12 +54,12 @@ Interpretation: proves the loop wires together. It is **not** evidence of Catan 
 
 | Gap | Task |
 |---|---|
-| Schema v2 identity fields landed; prompt parity still open | T1 done → T2 |
-| Train/play prompt mismatch (compact SFT prompts remain) | T2 |
+| Schema v2 identity fields landed | T1 done |
+| Train/play prompt parity via stored live renders | T2 done |
 | MINI maps fail-loud via `MINI_MAP_TEMPLATE` | T3 done |
-| Splits on UUID; no seed registry wiring | T4 |
+| Splits by `game_key`; `--seed-range-name` wired | T4 done |
 | Resume-safe append + journal (no silent unlink) | T5 done |
-| Eval missing fallback-separated metrics / WR win-share gap | T6 |
+| Gate-B metrics + `ladder-4p` / `ab-4p` fixtures | T6 done |
 | Gates not enforced in CI | T7 |
 | No local 8B QLoRA proof at 4096; revision unpinned | T8 |
 | Privileged-teacher POV audit + assistant-mask proof | T9 |

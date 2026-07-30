@@ -15,7 +15,12 @@ from catan_llm.data.identity import (
     compact_board_dict,
     resolve_source_commit,
 )
-from catan_llm.data.renderer import PROMPT_VERSION, compact_state_dict
+from catan_llm.data.renderer import (
+    PROMPT_VERSION,
+    compact_state_dict,
+    render_system_prompt,
+    render_user_prompt,
+)
 from catan_llm.data.schema import SCHEMA_VERSION, DecisionRecord, ExpertPolicy, GameOutcome
 from catan_llm.sim.players import policy_for_player
 
@@ -70,6 +75,9 @@ class TrajectoryAccumulator(GameAccumulator):
         policy = self.policy_by_color.get(
             color.value, policy_for_player(game_before_action.state.current_player())
         )
+        # Live renderer only — same functions as LLMPlayer (DATA_CONTRACT §4).
+        system_prompt = render_system_prompt(game_before_action, color)
+        user_prompt = render_user_prompt(game_before_action, color, playable)
 
         record = DecisionRecord(
             schema_version=SCHEMA_VERSION,
@@ -89,6 +97,8 @@ class TrajectoryAccumulator(GameAccumulator):
             phase=game_before_action.state.current_prompt.value,
             board=self._board,
             state=compact_state_dict(game_before_action, color),
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
             valid_actions=[action_to_record(a) for a in playable],
             action_taken=action_to_record(action),
             action_index=action_index,

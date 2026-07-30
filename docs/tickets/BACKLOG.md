@@ -20,9 +20,9 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | [01](issues/01-schema-v2.md) | Schema v2 + identity fields | 0.5 | done | — |
 | [02](issues/02-mini-maps.md) | MINI maps fail-loud | 0.5 | done | — |
 | [03](issues/03-resume-safe-writes.md) | Resume-safe shard writes | 0.5 | done | — |
-| [04](issues/04-prompt-parity.md) | Canonical train/play prompt parity | 0.5 | ready-for-agent | 01 |
-| [05](issues/05-splits-seed-registry.md) | Stable splits + seed registry wiring | 0.5 | ready-for-agent | 01 |
-| [06](issues/06-eval-gate-b-metrics.md) | Eval Gate-B metrics + 4p fixtures | 0.5 | ready-for-agent | 01 |
+| [04](issues/04-prompt-parity.md) | Canonical train/play prompt parity | 0.5 | done | 01 |
+| [05](issues/05-splits-seed-registry.md) | Stable splits + seed registry wiring | 0.5 | done | 01 |
+| [06](issues/06-eval-gate-b-metrics.md) | Eval Gate-B metrics + 4p fixtures | 0.5 | done | 01 |
 | [07](issues/07-pov-audit-assistant-mask.md) | Teacher POV audit + assistant-mask test | 0.5 | ready-for-agent | 01, 04 |
 | [08](issues/08-ci-gate-tests.md) | CI gate tests | 0.5 | ready-for-agent | 02, 04, 05, 06, 07 |
 | [09](issues/09-local-8b-qlora-smoke.md) | Local 8B QLoRA smoke on 5060 Ti | 0.5 | ready-for-agent | — (owner GPU) |
@@ -45,8 +45,9 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 
 ## Frontier right now (can start)
 
-- **04, 05, 06** — Wave B (after 01; 07 after 04)
-- **09** — owner GPU anytime (blocks Phase 1)
+- **07** — POV audit + assistant-mask (after 04)
+- **08** — CI gate tests (after 02, 04, 05, 06, 07)
+- **09** — owner GPU (on hold / local machine; blocks Phase 1)
 
 ## Already done (not ticketed as open work)
 

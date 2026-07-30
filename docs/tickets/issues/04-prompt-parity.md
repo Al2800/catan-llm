@@ -6,11 +6,11 @@ labeled SFT. Every record stores `prompt_version`.
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Phase:** 0.5 (T2)
 
-- [ ] Labeled SFT examples use live `render_system_prompt` / `render_user_prompt`
-- [ ] `PROMPT_VERSION` constant exists and is written on records
-- [ ] Parity test over ≥20 seeded games: stored/dataset prompts == live renders
-- [ ] Bumping renderer text requires bumping `PROMPT_VERSION`
+- [x] Labeled SFT examples use live `render_system_prompt` / `render_user_prompt`
+- [x] `PROMPT_VERSION` constant exists and is written on records
+- [x] Parity test over ≥20 seeded games: stored/dataset prompts == live renders
+- [x] Bumping renderer text requires bumping `PROMPT_VERSION`

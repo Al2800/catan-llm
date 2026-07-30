@@ -20,6 +20,7 @@ from catan_llm.data.identity import (
     resolve_source_commit,
 )
 from catan_llm.data.schema import DecisionRecord, ExpertPolicy, GameOutcome
+from catan_llm.data.seed_registry import resolve_generation_seeds
 from catan_llm.sim.players import bot_config_for_names, make_player
 from catan_llm.sim.trajectories import (
     TrajectoryAccumulator,
@@ -139,7 +140,7 @@ def generate_trajectories(
     *,
     bot_names: list[str],
     num_games: int,
-    seed: int,
+    seed: int | None = None,
     out_path: Path,
     map_type: str = "BASE",
     vps_to_win: int = 10,
@@ -147,6 +148,7 @@ def generate_trajectories(
     chunk_flush: int = 25,
     resume: bool = True,
     overwrite: bool = False,
+    seed_range_name: str | None = None,
 ) -> dict:
     """Generate decision trajectories with append-only JSONL + game_key journal.
 
@@ -155,7 +157,25 @@ def generate_trajectories(
     - Default ``resume=True``: skip ``game_key``s already in the sidecar journal.
     - ``resume=False`` refuses to write over an existing non-empty output unless
       ``overwrite=True`` (explicit wipe of jsonl + journal).
+
+    Seed ranges: pass ``seed_range_name`` from ``docs/SEED_REGISTRY.md``.
+    Cohort stop (SCOPE §5.2): do not blindly burn full reserved counts — stop when
+    filtered decision targets are met.
     """
+    seed, num_games, seed_range = resolve_generation_seeds(
+        num_games=num_games, seed=seed, seed_range_name=seed_range_name
+    )
+    seed_range_meta = (
+        {
+            "name": seed_range.name,
+            "start": seed_range.start,
+            "count": seed_range.count,
+            "end": seed_range.end,
+        }
+        if seed_range is not None
+        else None
+    )
+
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     journal_path = journal_path_for(out_path)
@@ -212,24 +232,30 @@ def generate_trajectories(
         if finished_games % chunk_flush == 0:
             flush()
 
+    empty_summary = {
+        "num_games": 0,
+        "num_decisions": 0,
+        "skipped_games": skipped,
+        "winners": winners,
+        "out_path": str(out_path),
+        "journal_path": str(journal_path),
+        "seeds": seeds,
+        "bot_names": bot_names,
+        "map_type": map_type.upper(),
+        "base_seed": seed,
+        "seed_range": seed_range_meta,
+        "resume": resume,
+        "catanatron_commit": CATANATRON_COMMIT,
+        "source_commit": resolve_source_commit(),
+        "cohort_note": (
+            "SCOPE §5.2: stop at filtered decision targets; "
+            "do not blindly burn full reserved seed counts."
+        ),
+    }
     if not planned:
         if not out_path.exists():
             write_jsonl(out_path, [])
-        return {
-            "num_games": 0,
-            "num_decisions": 0,
-            "skipped_games": skipped,
-            "winners": winners,
-            "out_path": str(out_path),
-            "journal_path": str(journal_path),
-            "seeds": seeds,
-            "bot_names": bot_names,
-            "map_type": map_type.upper(),
-            "base_seed": seed,
-            "resume": resume,
-            "catanatron_commit": CATANATRON_COMMIT,
-            "source_commit": resolve_source_commit(),
-        }
+        return empty_summary
 
     if workers <= 1:
         for s, _gkey in tqdm(planned, total=len(planned), desc="games"):
@@ -257,9 +283,14 @@ def generate_trajectories(
         "bot_names": bot_names,
         "map_type": map_type.upper(),
         "base_seed": seed,
+        "seed_range": seed_range_meta,
         "resume": resume,
         "catanatron_commit": CATANATRON_COMMIT,
         "source_commit": resolve_source_commit(),
+        "cohort_note": (
+            "SCOPE §5.2: stop at filtered decision targets; "
+            "do not blindly burn full reserved seed counts."
+        ),
     }
 
 

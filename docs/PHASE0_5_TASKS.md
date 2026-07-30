@@ -41,11 +41,12 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - Unit tests cover round-trip
 - Builder rejects v1 rows for Phase-1 paths
 
-## T2 — Canonical prompt parity
+## T2 — Canonical prompt parity ✅
 
 **Goal:** Train chat JSONL uses live renderer only.  
+**Status:** done (ticket 04)  
 **Deps:** T1  
-**Touch:** `data/dataset.py`, `data/renderer.py`, tests.  
+**Touch:** `data/dataset.py`, `sim/trajectories.py`, tests.  
 **Done when:**
 - Compact alternate prompt path removed for labeled SFT
 - `tests/test_prompt_parity.py` asserts system/user equality on ≥20 seeded games
@@ -62,11 +63,12 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - No silent BASE fallback
 - Test asserts MINI topology/hash ≠ BASE for same seed construction path
 
-## T4 — Stable splits + seed registry wiring
+## T4 — Stable splits + seed registry wiring ✅
 
 **Goal:** Splits by `game_key`; scripts read [`SEED_REGISTRY.md`](SEED_REGISTRY.md) names.  
+**Status:** done (ticket 05)  
 **Deps:** T1  
-**Touch:** `data/dataset.py`, generate/build CLIs, tests.  
+**Touch:** `data/dataset.py`, `data/seed_registry.py`, generate CLI, tests.  
 **Done when:**
 - No UUID-based split
 - Same inputs → same split assignment
@@ -84,11 +86,12 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - Atomic rename or append-only + journal of completed `game_key`s
 - Documented resume flag
 
-## T6 — Eval protocol metrics + fixture hooks
+## T6 — Eval protocol metrics + fixture hooks ✅
 
 **Goal:** Arena reports Gate-B fields with correct WR comparison.  
+**Status:** done (ticket 06)  
 **Deps:** T1 (for prompt_version plumbing if exposed)  
-**Touch:** `eval/metrics.py`, `eval/arena.py`, `play/llm_player.py`.  
+**Touch:** `eval/metrics.py`, `eval/arena.py`, `play/llm_player.py`, `scripts/run_arena.py`.  
 **Done when:**
 - Reports `parse_rate_model`, `legality_rate_model`, `fallback_rate`, `vp_margin`
 - Reports `win_share_gap[candidate,weightedrandom]`

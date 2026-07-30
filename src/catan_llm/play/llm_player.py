@@ -10,10 +10,12 @@ from typing import Any, Callable
 from catanatron.models.enums import ActionType
 from catanatron.models.player import Player
 
-from catan_llm.data.parser import fallback_action, parse_action_response
+from catan_llm.data.parser import FALLBACK_POLICY, fallback_action, parse_action_response
 from catan_llm.data.renderer import render_system_prompt, render_user_prompt
 
 AUTO_PLAY = {ActionType.ROLL}
+# Re-export locked policy for eval reports.
+assert FALLBACK_POLICY == "first_legal"
 
 
 class LLMPlayer(Player):
@@ -43,20 +45,30 @@ class LLMPlayer(Player):
         self._parse_total = 0
         self._legal_ok = 0
         self._legal_total = 0
+        self._fallback_count = 0
         self.last_raw: str = ""
         self.last_error: str | None = None
+        self.fallback_policy = FALLBACK_POLICY
 
     def reset_state(self):
         self._system_cache = None
         self._parse_ok = self._parse_total = 0
         self._legal_ok = self._legal_total = 0
+        self._fallback_count = 0
         self.last_raw = ""
         self.last_error = None
 
-    def consume_eval_counters(self) -> tuple[int, int, int, int]:
-        vals = (self._parse_ok, self._parse_total, self._legal_ok, self._legal_total)
+    def consume_eval_counters(self) -> dict[str, int]:
+        vals = {
+            "parse_ok": self._parse_ok,
+            "parse_total": self._parse_total,
+            "legal_ok": self._legal_ok,
+            "legal_total": self._legal_total,
+            "fallback_count": self._fallback_count,
+        }
         self._parse_ok = self._parse_total = 0
         self._legal_ok = self._legal_total = 0
+        self._fallback_count = 0
         return vals
 
     def decide(self, game, playable_actions):
@@ -79,6 +91,7 @@ class LLMPlayer(Player):
             self.last_error = str(exc)
             self._parse_total += 1
             self._legal_total += 1
+            self._fallback_count += 1
             return fallback_action(playable_actions)
 
         result = parse_action_response(raw, playable_actions)
@@ -90,6 +103,7 @@ class LLMPlayer(Player):
             return result.action
 
         self.last_error = result.error
+        self._fallback_count += 1
         return fallback_action(playable_actions)
 
     def _complete(self, system: str, user: str) -> str:

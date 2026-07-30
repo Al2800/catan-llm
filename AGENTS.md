@@ -68,7 +68,9 @@ See [`.cursor/skills/engineering/README.md`](.cursor/skills/engineering/README.m
 pip install -e ".[dev]"
 ruff check src tests
 pytest -q
-catan-arena --games 4 --vps 6 --no-alphabeta --out outputs/arena/ci.json
+catan-arena --fixture bot-ladder --games 4 --vps 6 --no-alphabeta --out outputs/arena/ci.json
+catan-arena --fixture ladder-4p --games 4 --vps 6 --out outputs/arena/ladder.json
+catan-generate --seed-range-name hw_smoke --games 2 --vps 6 --overwrite --out /tmp/t.jsonl
 ```
 
 Training extras: `pip install -e ".[train]"` (+ bitsandbytes / Blackwell torch on the owner GPU).
@@ -81,7 +83,9 @@ Training extras: `pip install -e ".[train]"` (+ bitsandbytes / Blackwell torch o
 
 ## Current code vs docs
 
-As of the handoff-review update, **docs describe v2 / Phase 0.5**; much of `src/` is still Phase-0 plumbing (v1-ish records, compact dataset prompts, broken MINI helper). Prefer implementing task cards over “fixing forward” on scale features.
+Wave A+B (tickets 01–06) landed on `main`: schema v2, MINI, resume writes, prompt parity,
+`game_key` splits + seed registry, Gate-B arena fixtures. Remaining Phase 0.5: **07**
+(POV/assistant-mask), **08** (CI gates), **09** (owner-GPU 8B smoke).
 
 ## License
 

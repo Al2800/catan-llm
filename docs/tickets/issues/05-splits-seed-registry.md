@@ -5,11 +5,11 @@ named seed ranges from `SEED_REGISTRY.md`. Same inputs → same split assignment
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Phase:** 0.5 (T4)
 
-- [ ] No UUID-based split logic remains on Phase-1 paths
-- [ ] Deterministic split assignment covered by a test
-- [ ] CLI supports `--seed-range-name` (or equivalent) from the registry
-- [ ] Cohort stop guidance referenced (SCOPE §5.2) — do not blindly burn 50k games
+- [x] No UUID-based split logic remains on Phase-1 paths
+- [x] Deterministic split assignment covered by a test
+- [x] CLI supports `--seed-range-name` (or equivalent) from the registry
+- [x] Cohort stop guidance referenced (SCOPE §5.2) — do not blindly burn 50k games

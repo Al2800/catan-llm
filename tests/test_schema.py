@@ -38,6 +38,8 @@ def _sample_record(**overrides) -> DecisionRecord:
         phase="BUILD_INITIAL_SETTLEMENT",
         board={"tiles": []},
         state={"turn": 0},
+        system_prompt="SYSTEM",
+        user_prompt="USER\nAVAILABLE ACTIONS:\n  [0] BUILD_SETTLEMENT",
         valid_actions=[{"color": "RED", "action_type": "BUILD_SETTLEMENT", "value": 3}],
         action_taken={"color": "RED", "action_type": "BUILD_SETTLEMENT", "value": 3},
         action_index=0,

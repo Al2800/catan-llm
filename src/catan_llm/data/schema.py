@@ -62,6 +62,9 @@ class DecisionRecord(BaseModel):
     phase: str
     board: dict[str, Any] = Field(default_factory=dict)
     state: dict[str, Any]
+    # Canonical prompts captured via live renderer at decision time (train/play parity).
+    system_prompt: str = ""
+    user_prompt: str = ""
     valid_actions: list[ActionRecord]
     action_taken: ActionRecord
     action_index: int
@@ -90,6 +93,7 @@ class DatasetManifest(BaseModel):
     bot_mix: list[str]
     bot_config: list[dict[str, Any]] = Field(default_factory=list)
     seeds: list[int]
+    seed_range: dict[str, Any] | None = None
     map_type: str = "BASE"
     num_games: int
     num_decisions: int
@@ -117,3 +121,8 @@ def require_schema_v2(records: list[DecisionRecord], *, context: str = "dataset"
             )
         if record.bot_config is None:
             raise ValueError(f"{context}: row {i} missing bot_config")
+        if not record.system_prompt or not record.user_prompt:
+            raise ValueError(
+                f"{context}: row {i} missing system_prompt/user_prompt "
+                "(required for train/play parity)"
+            )
