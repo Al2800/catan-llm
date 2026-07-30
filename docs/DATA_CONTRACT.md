@@ -141,16 +141,27 @@ Publish counts in the dataset quality report.
 
 ## 8. Tier A rationales
 
-Required style: feature-aware one-liners. Examples:
+Required style: feature-aware one-liners using **learner-observable** features only
+(SCOPE §5.1 — privileged teachers may choose actions with full state, but rationale
+text must not leak hidden opponent hands).
+
+Allowed examples:
 
 - `"pips=13 (H+O), blocks BLUE expansion toward 2:1 O port"`
 - `"extends toward open settlement node 42; longest_road threat=4"`
-- `"robber on 6-pip wheat; steal from ORANGE (7 cards)"`
-- `"valueΔ=+0.12 vs next-best build (expert VF)"` when available
+- `"robber on 6-pip wheat; steal from ORANGE (7 cards)"`  ← card *count* OK
+- `"valueΔ=+0.12 vs next-best build (expert VF)"` when delta does not require citing hidden cards
+
+Forbidden in rationale text:
+
+- Opponent exact resource/dev-card compositions
+- Any feature not present in the canonical user prompt
 
 Not sufficient for Phase-1 sign-off: `"policy selects BUILD_SETTLEMENT"`.
 
-Minimum features: pip sum, resource diversity, port access, blocker value, hand imbalance for trades, army/road race cues; value delta when expert exposes it (SCOPE §7.4).
+Minimum features: pip sum, resource diversity, port access, blocker value, own-hand
+imbalance for trades, public army/road race cues; optional valueΔ if POV-safe
+(SCOPE §7.4). CI (Phase 0.5 T9) greps rationales for opponent private-hand leakage patterns.
 
 ## 9. Manifest (required keys)
 

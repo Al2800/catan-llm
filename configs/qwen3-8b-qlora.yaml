@@ -35,6 +35,7 @@ data:
   val_file: data/processed/expert-v1/val.jsonl
   # Measured canonical prompts are ~2.3–2.5k tokens before the assistant label.
   # 2048 with keep_start truncation would cut the JSON label — do not lower below 4096.
+  # 4096 is a label-safety floor; T8 must prove VRAM on the 5060 Ti with the pinned revision.
   max_seq_length: 4096
   packing: false
   require_schema_version: v2

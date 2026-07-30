@@ -10,7 +10,8 @@ renderer + action parser, tiny SFT smoke, eval arena v0 (bot-vs-bot), CI.
 ## Status
 
 **Phase 0 plumbing: complete** (spike proves wiring).  
-**Phase 0.5 (contract repair + local 8B proof): next** — required before Phase 1 scale.
+**Phase 0.5 (contract repair + local 8B proof): next** — required before Phase 1 scale.  
+**Handoff base:** `cursor/phase-0-foundations-9ca9` until PR #1 merges.
 
 Handoff pack:
 
@@ -58,10 +59,12 @@ Interpretation: proves the loop wires together. It is **not** evidence of Catan 
 | MINI maps broken / silent fallback | T3 |
 | Splits on UUID; no seed registry wiring | T4 |
 | Generation deletes outputs | T5 |
-| Eval missing fallback-separated metrics / VP margin | T6 |
+| Eval missing fallback-separated metrics / WR win-share gap | T6 |
 | Gates not enforced in CI | T7 |
-| No local 8B QLoRA proof; old 2048 seq len was unsafe | T8 |
+| No local 8B QLoRA proof at 4096; revision unpinned | T8 |
+| Privileged-teacher POV audit + assistant-mask proof | T9 |
 | Tier A rationales are restatements | Phase 1 (after 0.5) |
+| `/setup-matt-pocock-skills` not run | optional (needed for ticket/triage skills) |
 | GPL distribution posture | owner decision before combined packaging |
 
 ## Commands

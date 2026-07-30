@@ -32,14 +32,17 @@ Run on the 5060 Ti; save outputs under `outputs/hw_smoke/`:
    - Load `Qwen/Qwen3-8B-Instruct` (exact revision recorded) in 4-bit with bitsandbytes
    - Record peak VRAM
 3. **QLoRA train micro-step**
-   - 10–20 optimizer steps using [`configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml) on a tiny JSONL shard
-   - `gradient_checkpointing: true`, batch size 1, **`max_seq_length: 4096`** (canonical prompts are ~2.3–2.5k before the assistant label; 2048 is unsafe)
-   - Peak VRAM must stay comfortably under 16GB (target ≤14GB with headroom)
-4. **Serve / generate**
+   - 10–20 optimizer steps using [`configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml) on a tiny JSONL shard built from the **canonical** renderer
+   - `gradient_checkpointing: true`, batch size 1, **`max_seq_length: 4096`** (label-safety floor; 2048 is unsafe)
+   - **Pin** `model.revision` to a concrete commit SHA in the successful report
+   - Peak VRAM logged. Target ≤14GB; if OOM at 4096, try prompt compression (shorter rules / board caching) or document rental fallback — **never** lower `max_seq_length` below the no-truncation budget
+4. **Assistant-mask check**
+   - Run the T9 one-batch mask test against this pinned revision/tokenizer
+5. **Serve / generate**
    - Either vLLM OpenAI server **or** HF generate path used by `LLMPlayer`
    - One game vs Random completes; log `parse_rate_model` / `fallback_rate`
-5. **Report**
-   - Write `outputs/hw_smoke/report.json` with versions, revisions, peak VRAM, step time, any OOMs/workarounds
+6. **Report**
+   - Write `outputs/hw_smoke/report.json` with versions, **model revision**, peak VRAM, tokens/sec, step time, OOMs/workarounds, and go/no-go for local Phase-2 SFT
 
 ## 4. Known constraints
 

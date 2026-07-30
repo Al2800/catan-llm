@@ -33,15 +33,19 @@ to wire issue tracker / triage defaults for this repo.
 
 **Phase 0 plumbing complete. Phase 0.5 is the handoff surface.**
 
+**Branch:** work from `cursor/phase-0-foundations-9ca9` until [PR #1](https://github.com/Al2800/catan-llm/pull/1) is merged — `main` may still be the scope-only seed.
+
 Locked decisions (see SCOPE §12):
 
 - Base model: **Qwen3-8B** (Apache-2.0), QLoRA-first
 - Primary hardware: RTX 5060 Ti 16GB (local), burst rentals for RL scale
 - Train/play prompts must be identical; schema **v2** + `prompt_version`
+- Privileged teacher distillation OK; learner prompts + Tier A text stay POV-limited
 - Fallback: **`first_legal`**
-- SFT context: **`max_seq_length ≥ 4096`** (canonical prompts are ~2.3–2.5k before the label)
-- Seeds only from `docs/SEED_REGISTRY.md`
-- No ≥100k dataset until local 8B QLoRA smoke succeeds
+- SFT context: **`max_seq_length ≥ 4096`** (label-safety floor; T8 must prove VRAM)
+- Headline eval: **4-player** fixtures; “beats WR” = higher win share in the same ladder
+- Seeds only from `docs/SEED_REGISTRY.md`; generate to cohort targets, not max range
+- No ≥100k dataset until Phase 0.5 exit (T1–T7+T9 + T8 report)
 - Docs win over code until both are updated together
 
 ## Layout

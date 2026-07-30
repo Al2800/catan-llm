@@ -2,6 +2,17 @@
 
 Read this before changing code. Normative docs win over outdated implementations.
 
+## Base branch (read first)
+
+Until PR [#1](https://github.com/Al2800/catan-llm/pull/1) is merged, **do not base work on `main`**.
+`main` may only contain the initial scope seed. Use:
+
+```text
+cursor/phase-0-foundations-9ca9
+```
+
+After merge, use `main`.
+
 ## Normative docs (in order)
 
 1. [`docs/SCOPE.md`](docs/SCOPE.md) — goals, phases, locked decisions
@@ -30,13 +41,14 @@ See [`.cursor/skills/engineering/README.md`](.cursor/skills/engineering/README.m
 
 **Do**
 
-- Implement Phase 0.5 task cards (T1–T8) before any ≥100k dataset job
+- Implement Phase 0.5 task cards (**T1–T9**) before any ≥100k dataset job; respect the dependency graph
 - Keep train prompts byte-identical to live `render_*` functions
 - Bump `PROMPT_VERSION` whenever renderer text changes
 - Use `schema_version: "v2"` for new trajectories
-- Allocate seeds only from `SEED_REGISTRY.md`
+- Allocate seeds only from `SEED_REGISTRY.md`; stop at cohort targets (SCOPE §5.2)
 - Keep fallback policy = `first_legal`
 - Use `max_seq_length >= 4096` for canonical-prompt SFT
+- Keep Tier A rationales POV-safe (experts may use full `Game`; text must not leak opponent hands)
 - Add/adjust tests in the same PR as behavior changes
 - Update docs in the same PR when changing contracts
 
@@ -46,10 +58,13 @@ See [`.cursor/skills/engineering/README.md`](.cursor/skills/engineering/README.m
 - Split datasets by UUID `game_id`
 - Silently fall back MINI → BASE
 - Treat smoke parse/legality as skill evidence
+- Treat candidate WR > 50% in a 4p ladder as “beats WeightedRandom”
 - Start Phase-3 GRPO without a filled `RL_SPEC.md`
 - Download 8B models in default CI
-- Set both `assistant_only_loss` and `completion_only_loss` on chat SFT without verifying TRL behavior — use **assistant_only_loss only**
-- Claim “beat AlphaBeta” without the pinned fixture in `EVAL_PROTOCOL.md`
+- Set both `assistant_only_loss` and `completion_only_loss` on chat SFT — use **assistant_only_loss only**
+- Lower `max_seq_length` below the no-truncation budget to fix OOM
+- Claim “beat AlphaBeta” without the pinned `ab-4p` fixture in `EVAL_PROTOCOL.md`
+- Assume `/setup-matt-pocock-skills` has been run (skills are optional until configured)
 
 ## Commands
 

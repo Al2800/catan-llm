@@ -9,8 +9,8 @@ Update this table in the same PR that allocates a new range.
 
 | Name | Start | Count | End (exclusive) | Purpose | Status |
 |---|---:|---:|---:|---|---|
-| `train_main` | 0 | 50_000 | 50_000 | Phase-1 expert trajectory generation (BASE) | reserved |
-| `train_mini_curriculum` | 50_000 | 10_000 | 60_000 | Optional MINI curriculum | reserved |
+| `train_main` | 0 | 50_000 | 50_000 | Phase-1 BASE expert games (use until ≥100k filtered decisions; see SCOPE §5.2 — do not blindly burn all) | reserved |
+| `train_mini_curriculum` | 50_000 | 10_000 | 60_000 | Optional MINI curriculum slice | reserved |
 | `val_split_pool` | 60_000 | 5_000 | 65_000 | Extra games if split-by-game_key needs topping up | reserved |
 | `eval_holdout` | 100_000 | 5_000 | 105_000 | Immutable offline holdout (≥5k games) | reserved |
 | `ladder_sft_gate` | 200_000 | 1_000 | 201_000 | Stage-1 ladder (≥200 finished used from here) | reserved |
