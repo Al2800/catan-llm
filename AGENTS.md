@@ -21,7 +21,9 @@ After merge, use `main`.
 4. [`docs/SEED_REGISTRY.md`](docs/SEED_REGISTRY.md) — only allowed seed ranges
 5. [`docs/ENV_BLACKWELL.md`](docs/ENV_BLACKWELL.md) — local GPU stack
 6. [`docs/PHASE0_5_TASKS.md`](docs/PHASE0_5_TASKS.md) — current assignable work
-7. [`docs/RL_SPEC.md`](docs/RL_SPEC.md) — fill before GRPO
+7. [`docs/tickets/BACKLOG.md`](docs/tickets/BACKLOG.md) — **ticket index** (outstanding work)
+8. [`docs/RL_SPEC.md`](docs/RL_SPEC.md) — fill before GRPO
+9. [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md) — local ticket conventions
 
 ## Agent skills (project-level)
 

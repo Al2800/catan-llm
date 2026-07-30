@@ -24,7 +24,8 @@ to wire issue tracker / triage defaults for this repo.
 | [`docs/EVAL_PROTOCOL.md`](docs/EVAL_PROTOCOL.md) | Fixtures, metrics, promotion gates |
 | [`docs/SEED_REGISTRY.md`](docs/SEED_REGISTRY.md) | Disjoint seed ranges |
 | [`docs/ENV_BLACKWELL.md`](docs/ENV_BLACKWELL.md) | 5060 Ti / PyTorch / vLLM validation plan |
-| [`docs/PHASE0_5_TASKS.md`](docs/PHASE0_5_TASKS.md) | Assignable Phase 0.5 work (T1–T8) |
+| [`docs/PHASE0_5_TASKS.md`](docs/PHASE0_5_TASKS.md) | Assignable Phase 0.5 work (T1–T9) |
+| [`docs/tickets/BACKLOG.md`](docs/tickets/BACKLOG.md) | **Ticket backlog** — status of all outstanding work |
 | [`docs/RL_SPEC.md`](docs/RL_SPEC.md) | Phase-3 RL entry template |
 | [`docs/PHASE0.md`](docs/PHASE0.md) | Phase 0 status + known gaps |
 | [`configs/qwen3-8b-qlora.yaml`](configs/qwen3-8b-qlora.yaml) | Phase-2 QLoRA sketch (`max_seq_length: 4096`) |
