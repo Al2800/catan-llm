@@ -110,7 +110,7 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - Unfinished items may use `xfail(strict=True)` only with a task-id reason
 - Default CI avoids downloading 8B (Qwen one-batch skips until T8 pins revision)
 
-## T8 — Local 8B QLoRA smoke (owner GPU)
+## T8 — Local Qwen3.5-9B QLoRA smoke (owner GPU)
 
 **Goal:** Prove 5060 Ti path at label-safe context.  
 **Deps:** none (ideally after T2 for real prompts)  

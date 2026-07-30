@@ -198,11 +198,11 @@ Candidates (final pick is a Phase-0 spike; all are fine-tunable and vLLM-servabl
 
 - Tiny run: SmolLM2-135M through short SFT → legal moves vs `RandomPlayer`.
 - **What this proved:** schema/parser/arena wiring works.
-- **What this did not prove:** skill, renderer parity, or 8B QLoRA on the 5060 Ti.
+- **What this did not prove:** skill, renderer parity, or Qwen3.5-9B QLoRA on the 5060 Ti.
 - Remaining Stage-0 hard gates before Phase-1 scale (see §11 Phase 0.5):
   1. Train prompts == live renderer prompts (parity test).
   2. MINI maps use `MINI_MAP_TEMPLATE` (no silent BASE fallback).
-  3. Local 8B QLoRA load/train/serve smoke on the owner's 5060 Ti with VRAM telemetry.
+  3. Local Qwen3.5-9B QLoRA load/train/serve smoke on the owner's 5060 Ti with VRAM telemetry.
 
 ### Stage 1 — SFT (behavior cloning)
 
@@ -291,7 +291,7 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 **Hard gates before ≥100k generation:**
 
 1. Phase 0.5 task cards T1–T7 + T9 merged (contracts, parity, CI gates, masking/POV audit).
-2. T8 local 8B QLoRA smoke on the 5060 Ti succeeds **or** an explicit rental fallback is approved in the T8 report.
+2. T8 local Qwen3.5-9B QLoRA smoke on the 5060 Ti succeeds **or** an explicit rental fallback is approved in the T8 report.
 3. Peak VRAM / tokens/sec / approved cohort size recorded.
 
 ### 9.2 Software stack
@@ -339,9 +339,9 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 ## 11. Phased roadmap (deliverable-gated, not time-gated)
 
 - **Phase 0 — Foundations & spike.** *(plumbing largely complete)* Repo scaffold, pinned Catanatron, simulator adapter, trajectory schema, renderer + parser, tiny SFT smoke, eval arena v0, CI. **Exit:** end-to-end loop proven with a small model on CPU.
-- **Phase 0.5 — Contract repair & local hardware proof.** *(next — task cards + dependency graph in [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md))* Schema v2 + `prompt_version`; canonical parity; MINI fail-loud; `game_key` splits; resume-safe writes; seed registry; eval Gate-B metrics; CI gate tests; teacher-observability audit + assistant-mask test; 8B QLoRA smoke at ≥4096 with VRAM log. **Exit:** T1–T7+T9 merged and T8 report exists (local success or approved rental fallback).
+- **Phase 0.5 — Contract repair & local hardware proof.** *(next — task cards + dependency graph in [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md))* Schema v2 + `prompt_version`; canonical parity; MINI fail-loud; `game_key` splits; resume-safe writes; seed registry; eval Gate-B metrics; CI gate tests; teacher-observability audit + assistant-mask test; Qwen3.5-9B QLoRA smoke at ≥4096 with VRAM log. **Exit:** T1–T7+T9 merged and T8 report exists (local success or approved rental fallback).
 - **Phase 1 — Data engine at scale.** Bulk generation (bot ladder), dataset builder + manifests, Tier A rationales (feature-aware), immutable holdout set, dataset quality report. **Exit:** v1 dataset (≥100k train decisions + separate ≥5k-game holdout) with quality sign-off per [`DATA_CONTRACT.md`](DATA_CONTRACT.md).
-- **Phase 2 — SFT model v1.** 8B QLoRA SFT on canonical prompts, eval vs bot ladder, failure taxonomy v1. **Exit:** Stage-1 criteria in §7 / [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md).
+- **Phase 2 — SFT model v1.** Qwen3.5-9B QLoRA SFT on canonical prompts, eval vs bot ladder, failure taxonomy v1. **Exit:** Stage-1 criteria in §7 / [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md).
 - **Phase 3 — RL v1.** Written reward/anti-hacking spec → GRPO loop on 8B → first champion checkpoint. Prefer rented GPU for meaningful iterations. **Exit:** ≥ AlphaBeta parity on the pre-registered fixture (≥55% / ≥1k games, Wilson LB > 50%).
 - **Phase 4 — Scale & polish.** 12B-class run (rental), self-play iteration loop, optional Tier B commentary, live-spectate UX, docs, blog write-up. **Exit:** champion beats AlphaBeta decisively; reproducible from README; publishable artifacts.
 

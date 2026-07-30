@@ -63,4 +63,4 @@ Run on the 5060 Ti; save outputs under `outputs/hw_smoke/`:
 
 ## 6. Gate language
 
-SCOPE decision §12.10: **No ≥100k dataset build until local 8B QLoRA smoke succeeds** and this report exists.
+SCOPE decision §12.10: **No ≥100k dataset build until local Qwen3.5-9B QLoRA smoke succeeds** and this report exists.

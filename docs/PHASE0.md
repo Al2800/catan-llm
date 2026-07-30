@@ -61,7 +61,7 @@ Interpretation: proves the loop wires together. It is **not** evidence of Catan 
 | Resume-safe append + journal (no silent unlink) | T5 done |
 | Gate-B metrics + `ladder-4p` / `ab-4p` fixtures | T6 done |
 | Contract gate tests wired in CI | T7 done |
-| No local 8B QLoRA proof at 4096; revision unpinned | T8 (owner GPU) |
+| No local Qwen3.5-9B QLoRA proof at 4096; revision unpinned | T8 (owner GPU) |
 | Privileged-teacher POV audit + assistant-mask proof | T9 done (Qwen one-batch skips until T8 pin) |
 | Tier A feature-aware templates landed (ticket 10); bulk scale still waits on T8/09 | Phase 1 partial |
 | `/setup-matt-pocock-skills` not run | optional (needed for ticket/triage skills) |
