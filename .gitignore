@@ -14,6 +14,7 @@ data/processed/
 datasets/
 *.jsonl
 !data/manifests/*.jsonl
+!docs/samples/*.jsonl
 
 # Local outputs / tooling
 outputs/
