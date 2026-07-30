@@ -147,23 +147,25 @@ Required style: feature-aware one-liners using **learner-observable** features o
 (SCOPE §5.1 — privileged teachers may choose actions with full state, but rationale
 text must not leak hidden opponent hands).
 
-Allowed examples:
+Implementation: [`src/catan_llm/data/tier_a.py`](../src/catan_llm/data/tier_a.py).  
+Review samples: [`samples/tier_a_rationales.md`](samples/tier_a_rationales.md).
 
-- `"pips=13 (H+O), blocks BLUE expansion toward 2:1 O port"`
-- `"extends toward open settlement node 42; longest_road threat=4"`
-- `"robber on 6-pip wheat; steal from ORANGE (7 cards)"`  ← card *count* OK
-- `"valueΔ=+0.12 vs next-best build (expert VF)"` when delta does not require citing hidden cards
+Allowed examples (current template style):
+
+- `"settlement node=16; pips=12 (S+O+B); port 2:1 O; blocks BLUE"`
+- `"road edge=(16,21); toward open node 21 pips=12 (O+B+S); longest_road threat=4"`
+- `"robber on pips=5 H; steal from ORANGE (7 cards)"`  ← card *count* OK
+- `"maritime BBBB→W; corrects hand[B=5]"`
+- `"valueΔ=+0.12 (expert valuefunction)"` when `state.value_delta` is present and POV-safe
 
 Forbidden in rationale text:
 
 - Opponent exact resource/dev-card compositions
-- Any feature not present in the canonical user prompt
-
-Not sufficient for Phase-1 sign-off: `"policy selects BUILD_SETTLEMENT"`.
+- Pure policy restatements (`"policy selects BUILD_SETTLEMENT"`, `"expands board position with …"`)
 
 Minimum features: pip sum, resource diversity, port access, blocker value, own-hand
 imbalance for trades, public army/road race cues; optional valueΔ if POV-safe
-(SCOPE §7.4). CI (Phase 0.5 T9) greps rationales for opponent private-hand leakage patterns.
+(SCOPE §7.4). CI greps rationales for opponent private-hand leakage patterns.
 
 ## 9. Manifest (required keys)
 

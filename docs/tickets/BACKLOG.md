@@ -26,7 +26,7 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | [07](issues/07-pov-audit-assistant-mask.md) | Teacher POV audit + assistant-mask test | 0.5 | done | 01, 04 |
 | [08](issues/08-ci-gate-tests.md) | CI gate tests | 0.5 | done | 02, 04–07 |
 | [09](issues/09-local-8b-qlora-smoke.md) | Local 8B QLoRA smoke on 5060 Ti | 0.5 | ready-for-agent | — (owner GPU) |
-| [10](issues/10-tier-a-rationales.md) | Feature-aware POV-safe Tier A rationales | 1 | ready-for-agent | 04✓, 07✓ |
+| [10](issues/10-tier-a-rationales.md) | Feature-aware POV-safe Tier A rationales | 1 | done | 04, 07 |
 | [11](issues/11-bulk-trajectory-generation.md) | Bulk trajectory generation (≥100k decisions) | 1 | blocked | 01–09 |
 | [12](issues/12-dataset-builder-quality.md) | Dataset builder quality + manifests | 1 | blocked | 05, 10, 11 |
 | [13](issues/13-eval-holdout.md) | Immutable eval holdout set | 1 | blocked | 01–09 |
@@ -46,7 +46,7 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 ## Frontier right now (can start)
 
 - **09** — owner GPU 8B QLoRA smoke (on hold / local machine; last Phase 0.5 blocker)
-- **10** — Tier A feature-aware rationales (Phase 1; unblocked for coding, scale still waits on 09)
+- Phase 1 scale (**11–14**) still blocked on **09**; **12** also needs **11**
 
 ## Already done (not ticketed as open work)
 

@@ -14,6 +14,7 @@ from catan_llm.data.parser import format_assistant_target
 from catan_llm.data.pov import assert_tier_a_pov_safe
 from catan_llm.data.renderer import render_system_prompt, render_user_prompt
 from catan_llm.data.schema import DatasetManifest, DecisionRecord, require_schema_v2
+from catan_llm.data.tier_a import render_tier_a_rationale
 from catan_llm.sim.trajectories import read_jsonl
 
 
@@ -26,28 +27,8 @@ def _sha256_file(path: Path) -> str:
 
 
 def tier_a_rationale(record: DecisionRecord) -> str:
-    """Free template rationale derived from action type / phase (POV-safe)."""
-    at = record.action_taken.action_type
-    phase = record.phase
-    policy = record.expert_policy.value
-    if phase.startswith("BUILD_INITIAL"):
-        text = f"{policy} initial placement via {at}"
-    elif at in {"BUILD_SETTLEMENT", "BUILD_CITY", "BUILD_ROAD"}:
-        text = f"{policy} expands board position with {at}"
-    elif at in {"PLAY_KNIGHT_CARD", "MOVE_ROBBER"}:
-        text = f"{policy} applies robber pressure via {at}"
-    elif at.startswith("PLAY_") or at == "BUY_DEVELOPMENT_CARD":
-        text = f"{policy} uses development-card line ({at})"
-    elif at == "MARITIME_TRADE":
-        text = f"{policy} balances hand via maritime trade"
-    elif at == "END_TURN":
-        text = f"{policy} ends turn; no higher-value legal build"
-    elif at == "ROLL":
-        text = "Must roll to start the turn"
-    else:
-        text = f"{policy} selects {at}"
-    assert_tier_a_pov_safe(text, context="tier_a_rationale")
-    return text
+    """Feature-aware POV-safe Tier A rationale (SCOPE §7.4)."""
+    return render_tier_a_rationale(record)
 
 
 def decision_to_chat(

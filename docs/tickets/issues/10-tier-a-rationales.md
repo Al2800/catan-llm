@@ -6,10 +6,13 @@ opponent private hands.
 
 **Blocked by:** 04, 07
 
-**Status:** blocked
+**Status:** done
 
 **Phase:** 1
 
-- [ ] Tier A templates cover SCOPE §7.4 minimum features
-- [ ] POV leakage tests still pass
-- [ ] Sample rationales appear in a small generated shard for review
+- [x] Tier A templates cover SCOPE §7.4 minimum features
+- [x] POV leakage tests still pass
+- [x] Sample rationales appear in a small generated shard for review
+
+**Notes:** Templates in `src/catan_llm/data/tier_a.py`. Samples in
+`docs/samples/tier_a_rationales.{md,jsonl}`.
