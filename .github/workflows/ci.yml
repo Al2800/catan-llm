@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main, "cursor/**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Install package
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          uv venv .venv
+          source .venv/bin/activate
+          uv pip install -e ".[dev]"
+
+      - name: Ruff
+        run: |
+          source .venv/bin/activate
+          ruff check src tests
+
+      - name: Pytest
+        run: |
+          source .venv/bin/activate
+          pytest -q
+
+      - name: Arena smoke
+        run: |
+          source .venv/bin/activate
+          catan-arena --games 4 --vps 6 --no-alphabeta --out outputs/arena/ci.json

@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "catan-llm"
+version = "0.1.0"
+description = "Train an 8–12B LLM to play Settlers of Catan in Catanatron"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Alastair Campbell" }]
+dependencies = [
+  # Pin Catanatron to a known commit (3.3.0 on PyPI is not published yet).
+  "catanatron @ git+https://github.com/bcollazo/catanatron.git@82aae93ab1f7c267218be0566df573ce477ec3d8",
+  "pydantic>=2.7",
+  "numpy>=1.26",
+  "pyyaml>=6.0",
+  "rich>=13.7",
+  "click>=8.1",
+  "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+train = [
+  "torch>=2.2",
+  "transformers>=4.44",
+  "datasets>=2.20",
+  "accelerate>=0.33",
+  "peft>=0.12",
+  "trl>=0.9",
+]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.5",
+]
+all = ["catan-llm[train,dev]"]
+
+[project.scripts]
+catan-generate = "catan_llm.scripts.generate_trajectories:main"
+catan-arena = "catan_llm.scripts.run_arena:main"
+catan-sft-smoke = "catan_llm.scripts.sft_smoke:main"
+catan-build-dataset = "catan_llm.scripts.build_dataset:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
