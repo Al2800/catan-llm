@@ -123,11 +123,12 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - If OOM: document prompt-compression or rental fallback — **do not** lower below label-safe length
 - Report checked in or attached to PR
 
-## T9 — Teacher POV audit + assistant-mask test
+## T9 — Teacher POV audit + assistant-mask test ✅
 
 **Goal:** Lock distillation fairness and prove SFT loss hits labels.  
+**Status:** done (ticket 07) — Qwen revision one-batch still skips until T8  
 **Deps:** T1 (and T2 for real chat formatting)  
-**Touch:** docs note in DATA_CONTRACT if needed; `tests/test_teacher_pov.py`; `tests/test_assistant_mask.py`; training helpers.  
+**Touch:** `docs/TEACHER_POV.md`; `data/pov.py`; `training/masking.py`; `tests/test_teacher_pov.py`; `tests/test_assistant_mask.py`.  
 **Done when:**
 - Short audit doc or test comments state: experts may use full `Game`; learner prompts POV-limited; Tier A POV-safe
 - Test fails if generated Tier A text includes opponent private-hand literals
@@ -141,6 +142,6 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 
 ## Exit
 
-Phase 0.5 is done when **T1–T7 and T9 are merged** and **T8 report exists**
-(local success **or** explicit approved rental fallback).  
+Phase 0.5 software cards **T1–T7 + T9 are merged**. Remaining: **T8 report**
+(local success **or** explicit approved rental fallback on owner GPU).  
 Only then start Phase-1 generation toward ≥100k filtered decisions (SCOPE §5.2).
