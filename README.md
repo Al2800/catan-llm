@@ -7,6 +7,13 @@ Pipeline: bulk self-play in Catanatron → structured + natural-language decisio
 datasets → SFT (QLoRA) on **Qwen3-8B** → GRPO/RLVR with engine-verifiable rewards →
 live play back inside the simulator against Catanatron's bot ladder.
 
+## Agent skills
+
+Project-level engineering skills live in [`.cursor/skills/engineering/`](.cursor/skills/engineering/)
+(from [mattpocock/skills](https://github.com/mattpocock/skills), MIT). Invoke with `/` in Agent chat
+(e.g. `/ask-matt`, `/setup-matt-pocock-skills`, `/implement`). Run `/setup-matt-pocock-skills` once
+to wire issue tracker / triage defaults for this repo.
+
 ## Docs (read before building)
 
 | Doc | Purpose |

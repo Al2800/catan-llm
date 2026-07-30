@@ -12,6 +12,20 @@ Read this before changing code. Normative docs win over outdated implementations
 6. [`docs/PHASE0_5_TASKS.md`](docs/PHASE0_5_TASKS.md) — current assignable work
 7. [`docs/RL_SPEC.md`](docs/RL_SPEC.md) — fill before GRPO
 
+## Agent skills (project-level)
+
+Installed under [`.cursor/skills/engineering/`](.cursor/skills/engineering/) from
+[mattpocock/skills](https://github.com/mattpocock/skills) (MIT). Available in this
+repo and to Cloud Agents that clone it.
+
+Useful entry points (type `/` in Agent chat):
+
+- `/ask-matt` — router over the engineering skills
+- `/setup-matt-pocock-skills` — run once to configure issue tracker / triage / domain docs
+- `/implement`, `/tdd`, `/code-review`, `/to-tickets`, `/to-spec`, `/wayfinder`
+
+See [`.cursor/skills/engineering/README.md`](.cursor/skills/engineering/README.md).
+
 ## Do / don't
 
 **Do**
