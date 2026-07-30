@@ -1,0 +1,24 @@
+{"action_type": "BUILD_SETTLEMENT", "phase": "BUILD_INITIAL_SETTLEMENT", "expert_policy": "random", "reasoning": "settlement node=23; pips=9 (S+B+W); initial_placement"}
+{"action_type": "BUILD_ROAD", "phase": "BUILD_INITIAL_ROAD", "expert_policy": "random", "reasoning": "road edge=(22,23); toward open node 22 pips=10 (S+B); longest_road threat=0"}
+{"action_type": "BUILD_SETTLEMENT", "phase": "BUILD_INITIAL_SETTLEMENT", "expert_policy": "valuefunction", "reasoning": "settlement node=16; pips=12 (S+O+B); initial_placement"}
+{"action_type": "BUILD_ROAD", "phase": "BUILD_INITIAL_ROAD", "expert_policy": "valuefunction", "reasoning": "road edge=(16,21); toward open node 21 pips=12 (O+B+S); longest_road threat=0"}
+{"action_type": "BUILD_SETTLEMENT", "phase": "BUILD_INITIAL_SETTLEMENT", "expert_policy": "weightedrandom", "reasoning": "settlement node=33; pips=3 (W); port 3:1; initial_placement"}
+{"action_type": "BUILD_ROAD", "phase": "BUILD_INITIAL_ROAD", "expert_policy": "weightedrandom", "reasoning": "road edge=(33,34); toward open node 34 pips=5 (W); longest_road threat=0"}
+{"action_type": "BUILD_SETTLEMENT", "phase": "BUILD_INITIAL_SETTLEMENT", "expert_policy": "alphabeta", "reasoning": "settlement node=8; pips=11 (O+B+H); initial_placement"}
+{"action_type": "BUILD_ROAD", "phase": "BUILD_INITIAL_ROAD", "expert_policy": "alphabeta", "reasoning": "road edge=(8,9); toward open node 9 pips=9 (O+H); longest_road threat=0"}
+{"action_type": "BUILD_SETTLEMENT", "phase": "BUILD_INITIAL_SETTLEMENT", "expert_policy": "alphabeta", "reasoning": "settlement node=0; pips=9 (W+O+S); blocks BLUE,WHITE; initial_placement"}
+{"action_type": "BUILD_ROAD", "phase": "BUILD_INITIAL_ROAD", "expert_policy": "alphabeta", "reasoning": "road edge=(0,20); toward open node 20 pips=9 (O+S); longest_road threat=0"}
+{"action_type": "BUILD_SETTLEMENT", "phase": "BUILD_INITIAL_SETTLEMENT", "expert_policy": "weightedrandom", "reasoning": "settlement node=43; pips=8 (B+S); blocks WHITE; initial_placement"}
+{"action_type": "BUILD_ROAD", "phase": "BUILD_INITIAL_ROAD", "expert_policy": "weightedrandom", "reasoning": "road edge=(43,44); toward open node 44 pips=3 (B); longest_road threat=0"}
+{"action_type": "BUILD_SETTLEMENT", "phase": "BUILD_INITIAL_SETTLEMENT", "expert_policy": "valuefunction", "reasoning": "settlement node=11; pips=10 (H+O+W); blocks ORANGE; initial_placement"}
+{"action_type": "BUILD_ROAD", "phase": "BUILD_INITIAL_ROAD", "expert_policy": "valuefunction", "reasoning": "road edge=(11,12); toward open node 12 pips=5 (H+W); longest_road threat=0"}
+{"action_type": "BUILD_SETTLEMENT", "phase": "BUILD_INITIAL_SETTLEMENT", "expert_policy": "random", "reasoning": "settlement node=37; pips=3 (W+H); initial_placement"}
+{"action_type": "BUILD_ROAD", "phase": "BUILD_INITIAL_ROAD", "expert_policy": "random", "reasoning": "road edge=(14,37); toward open node 14 pips=3 (W+H); longest_road threat=0"}
+{"action_type": "MOVE_ROBBER", "phase": "MOVE_ROBBER", "expert_policy": "weightedrandom", "reasoning": "robber on pips=4 O; steal from RED (3 cards)"}
+{"action_type": "BUILD_ROAD", "phase": "PLAY_TURN", "expert_policy": "weightedrandom", "reasoning": "road edge=(32,33); toward open node 32 pips=8 (O+W); longest_road threat=0"}
+{"action_type": "BUILD_CITY", "phase": "PLAY_TURN", "expert_policy": "valuefunction", "reasoning": "city node=11; pips=10 (H+O+W); blocks ORANGE"}
+{"action_type": "BUILD_ROAD", "phase": "PLAY_TURN", "expert_policy": "valuefunction", "reasoning": "road edge=(3,12); toward open node 3 pips=4 (W+H) / node 12 pips=5 (H+W); longest_road threat=1"}
+{"action_type": "MOVE_ROBBER", "phase": "MOVE_ROBBER", "expert_policy": "weightedrandom", "reasoning": "robber on pips=2 S"}
+{"action_type": "MARITIME_TRADE", "phase": "PLAY_TURN", "expert_policy": "weightedrandom", "reasoning": "maritime SSSDESERT\u2192O; corrects hand[S=3,B=2]"}
+{"action_type": "MOVE_ROBBER", "phase": "MOVE_ROBBER", "expert_policy": "weightedrandom", "reasoning": "robber on pips=1 W; steal from BLUE (4 cards)"}
+{"action_type": "BUILD_ROAD", "phase": "PLAY_TURN", "expert_policy": "weightedrandom", "reasoning": "road edge=(40,44); toward open node 40 pips=7 (H+B) / node 44 pips=3 (B); longest_road threat=2"}
