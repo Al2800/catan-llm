@@ -23,8 +23,8 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | [04](issues/04-prompt-parity.md) | Canonical train/play prompt parity | 0.5 | done | 01 |
 | [05](issues/05-splits-seed-registry.md) | Stable splits + seed registry wiring | 0.5 | done | 01 |
 | [06](issues/06-eval-gate-b-metrics.md) | Eval Gate-B metrics + 4p fixtures | 0.5 | done | 01 |
-| [07](issues/07-pov-audit-assistant-mask.md) | Teacher POV audit + assistant-mask test | 0.5 | ready-for-agent | 01, 04 |
-| [08](issues/08-ci-gate-tests.md) | CI gate tests | 0.5 | ready-for-agent | 02, 04, 05, 06, 07 |
+| [07](issues/07-pov-audit-assistant-mask.md) | Teacher POV audit + assistant-mask test | 0.5 | ready-for-agent | 01✓, 04✓ |
+| [08](issues/08-ci-gate-tests.md) | CI gate tests | 0.5 | blocked | 07 |
 | [09](issues/09-local-8b-qlora-smoke.md) | Local 8B QLoRA smoke on 5060 Ti | 0.5 | ready-for-agent | — (owner GPU) |
 | [10](issues/10-tier-a-rationales.md) | Feature-aware POV-safe Tier A rationales | 1 | blocked | 04, 07 |
 | [11](issues/11-bulk-trajectory-generation.md) | Bulk trajectory generation (≥100k decisions) | 1 | blocked | 01–09 |
