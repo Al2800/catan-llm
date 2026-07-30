@@ -236,7 +236,7 @@ Exact format strings live in [`DATA_CONTRACT.md`](DATA_CONTRACT.md) §8.
 |---|---|---|
 | Win rate vs bot ladder | Seeded N-game matches vs Random / WeightedRandom / ValueFunction / AlphaBeta | ≥ AlphaBeta parity, then exceed |
 | Elo (checkpoint pool) | Round-robin between all checkpoints + bots | monotonic improvement per iteration |
-| Legality & parse rate | % decisions with parseable, engine-legal action | ≥ 99.5% (fallback covers the rest) |
+| Legality & parse rate | % model calls with parseable, engine-legal action **before** fallback | ≥ 99.5% (fallback=`first_legal` covers the rest) |
 | Turn efficiency | Avg turns to finish (LLM-prompted games averaged 163 vs ~70 human in catan-bench) | trending toward bot norms |
 | VP margin | Avg final VP diff | secondary tiebreaker |
 | Failure taxonomy | per-action-type error breakdown from eval logs | drives data fixes each iteration |

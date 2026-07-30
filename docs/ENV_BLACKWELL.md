@@ -33,7 +33,7 @@ Run on the 5060 Ti; save outputs under `outputs/hw_smoke/`:
    - Record peak VRAM
 3. **QLoRA train micro-step**
    - 10–20 optimizer steps using [`configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml) on a tiny JSONL shard
-   - `gradient_checkpointing: true`, batch size 1, seq len ≤ 2048 initially
+   - `gradient_checkpointing: true`, batch size 1, **`max_seq_length: 4096`** (canonical prompts are ~2.3–2.5k before the assistant label; 2048 is unsafe)
    - Peak VRAM must stay comfortably under 16GB (target ≤14GB with headroom)
 4. **Serve / generate**
    - Either vLLM OpenAI server **or** HF generate path used by `LLMPlayer`
