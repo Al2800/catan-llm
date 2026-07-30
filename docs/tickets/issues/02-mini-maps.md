@@ -5,10 +5,10 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Phase:** 0.5 (T3)
 
-- [ ] MINI construction uses `CatanMap.from_template(MINI_MAP_TEMPLATE)`
-- [ ] Unsupported/failed map construction raises
-- [ ] Test proves MINI map hash/topology ≠ BASE for the same seed path
+- [x] MINI construction uses `CatanMap.from_template(MINI_MAP_TEMPLATE)`
+- [x] Unsupported/failed map construction raises
+- [x] Test proves MINI map hash/topology ≠ BASE for the same seed path

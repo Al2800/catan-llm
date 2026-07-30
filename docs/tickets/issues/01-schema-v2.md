@@ -6,11 +6,11 @@ Legacy v1 plumbing rows are rejected on Phase-1 dataset paths.
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Phase:** 0.5 (T1)
 
-- [ ] Records include `schema_version="v2"`, `game_key`, `map_hash`, `bot_config`, `bot_config_hash`, `prompt_version`, `catanatron_commit`, `source_commit`
-- [ ] Unit tests cover serialize/deserialize round-trip
-- [ ] Phase-1 dataset builder rejects non-v2 rows
-- [ ] Docs and code agree on schema v2 in the same PR
+- [x] Records include `schema_version="v2"`, `game_key`, `map_hash`, `bot_config`, `bot_config_hash`, `prompt_version`, `catanatron_commit`, `source_commit`
+- [x] Unit tests cover serialize/deserialize round-trip
+- [x] Phase-1 dataset builder rejects non-v2 rows
+- [x] Docs and code agree on schema v2 in the same commit

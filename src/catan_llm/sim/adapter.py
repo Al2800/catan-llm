@@ -8,19 +8,35 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from catanatron import Game
-from catanatron.models.map import CatanMap
+from catanatron.models.map import BASE_MAP_TEMPLATE, MINI_MAP_TEMPLATE, CatanMap
 from catanatron.models.player import Color
 from tqdm import tqdm
 
+from catan_llm.data.identity import (
+    CATANATRON_COMMIT,
+    bot_config_hash,
+    hash_catan_map,
+    make_game_key,
+    resolve_source_commit,
+)
 from catan_llm.data.schema import DecisionRecord, ExpertPolicy, GameOutcome
-from catan_llm.sim.players import make_player
-from catan_llm.sim.trajectories import TrajectoryAccumulator, append_jsonl, write_jsonl
+from catan_llm.sim.players import bot_config_for_names, make_player
+from catan_llm.sim.trajectories import (
+    TrajectoryAccumulator,
+    append_journal,
+    append_jsonl,
+    journal_path_for,
+    load_completed_game_keys,
+    write_jsonl,
+)
 
 
 @dataclass
 class GameResult:
     game_id: str
+    game_key: str
     seed: int
+    map_hash: str
     winner: str | None
     turns: int
     num_decisions: int
@@ -28,19 +44,27 @@ class GameResult:
     outcome: GameOutcome
 
 
-def _build_map(map_type: str):
+def build_catan_map(map_type: str) -> CatanMap:
+    """Build a CatanMap for the requested type. Failures raise (no silent BASE)."""
     key = map_type.upper()
+    if key == "BASE":
+        return CatanMap.from_template(BASE_MAP_TEMPLATE)
     if key == "MINI":
-        # Catanatron exposes MINI via from_template if available; fall back to standard.
-        if hasattr(CatanMap, "from_template"):
-            try:
-                return CatanMap.from_template("MINI")  # type: ignore[attr-defined]
-            except Exception:
-                pass
-        if hasattr(CatanMap, "from_random_template"):
-            return CatanMap.from_random_template()
-        return None
-    return None  # default BASE map
+        return CatanMap.from_template(MINI_MAP_TEMPLATE)
+    raise ValueError(f"Unsupported map_type={map_type!r}; expected BASE or MINI")
+
+
+def _burn_player_shuffle(n_players: int) -> None:
+    """Consume the same RNG draws State uses before map construction."""
+    placeholders = list(range(n_players))
+    random.sample(placeholders, len(placeholders))
+
+
+def map_for_seed(map_type: str, seed: int, *, n_players: int = 4) -> CatanMap:
+    """Build map under the RNG stream Game/State use for the default BASE path."""
+    random.seed(seed)
+    _burn_player_shuffle(n_players)
+    return build_catan_map(map_type)
 
 
 def play_one(
@@ -58,20 +82,39 @@ def play_one(
         players.append(player)
         policy_by_color[color.value] = policy
 
-    catan_map = _build_map(map_type)
-    game_kwargs = {"players": players, "seed": seed, "vps_to_win": vps_to_win}
-    if catan_map is not None:
-        game_kwargs["catan_map"] = catan_map
+    bot_config = bot_config_for_names(bot_names)
+    cfg_hash = bot_config_hash(bot_config)
 
-    game = Game(**game_kwargs)
+    # Match Catanatron's seed → player-shuffle → map construction order so MINI
+    # sits on the same RNG path BASE would use, then hand the map to Game.
+    catan_map = map_for_seed(map_type, seed, n_players=len(players))
+    map_hash = hash_catan_map(catan_map)
+    game_key = make_game_key(seed, map_hash, cfg_hash)
+
+    game = Game(
+        players=players,
+        seed=seed,
+        vps_to_win=vps_to_win,
+        catan_map=catan_map,
+    )
     acc = TrajectoryAccumulator(
-        seed=seed, map_type=map_type, policy_by_color=policy_by_color
+        seed=seed,
+        map_type=map_type.upper(),
+        map_hash=map_hash,
+        bot_config=bot_config,
+        bot_config_hash=cfg_hash,
+        game_key=game_key,
+        policy_by_color=policy_by_color,
+        catanatron_commit=CATANATRON_COMMIT,
+        source_commit=resolve_source_commit(),
     )
     game.play(accumulators=[acc])
     assert acc.outcome is not None
     return GameResult(
         game_id=game.id,
+        game_key=game_key,
         seed=seed,
+        map_hash=map_hash,
         winner=acc.outcome.winner,
         turns=acc.outcome.turns,
         num_decisions=len(acc.records),
@@ -85,6 +128,13 @@ def _play_one_job(args: tuple) -> GameResult:
     return play_one(bot_names, seed, map_type=map_type, vps_to_win=vps_to_win)
 
 
+def _expected_game_key(bot_names: list[str], seed: int, map_type: str) -> str:
+    bot_config = bot_config_for_names(bot_names)
+    cfg_hash = bot_config_hash(bot_config)
+    catan_map = map_for_seed(map_type, seed, n_players=len(bot_names))
+    return make_game_key(seed, hash_catan_map(catan_map), cfg_hash)
+
+
 def generate_trajectories(
     *,
     bot_names: list[str],
@@ -95,48 +145,102 @@ def generate_trajectories(
     vps_to_win: int = 10,
     workers: int = 1,
     chunk_flush: int = 25,
+    resume: bool = True,
+    overwrite: bool = False,
 ) -> dict:
-    """Generate decision trajectories and write crash-safe JSONL shards."""
+    """Generate decision trajectories with append-only JSONL + game_key journal.
+
+    Resume behavior (DATA_CONTRACT §10):
+    - Never `unlink()` completed outputs at job start.
+    - Default ``resume=True``: skip ``game_key``s already in the sidecar journal.
+    - ``resume=False`` refuses to write over an existing non-empty output unless
+      ``overwrite=True`` (explicit wipe of jsonl + journal).
+    """
     out_path = Path(out_path)
-    if out_path.exists():
-        out_path.unlink()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    journal_path = journal_path_for(out_path)
+
+    if overwrite:
+        if out_path.exists():
+            out_path.write_text("", encoding="utf-8")
+        if journal_path.exists():
+            journal_path.write_text("", encoding="utf-8")
+    elif not resume and (
+        (out_path.exists() and out_path.stat().st_size > 0)
+        or (journal_path.exists() and journal_path.stat().st_size > 0)
+    ):
+        raise FileExistsError(
+            f"Refusing to clobber existing trajectories at {out_path} "
+            "(pass resume=True to continue, or overwrite=True to wipe)."
+        )
+
+    completed = load_completed_game_keys(journal_path) if resume else set()
 
     seeds = [seed + i for i in range(num_games)]
-    jobs = [(bot_names, s, map_type, vps_to_win) for s in seeds]
+    planned: list[tuple[int, str]] = []
+    skipped = 0
+    for s in seeds:
+        gkey = _expected_game_key(bot_names, s, map_type)
+        if gkey in completed:
+            skipped += 1
+        else:
+            planned.append((s, gkey))
 
     total_decisions = 0
     finished_games = 0
     winners: dict[str, int] = {}
     buffer: list[DecisionRecord] = []
+    pending_journal: list[tuple[str, int]] = []
 
     def flush():
-        nonlocal buffer
+        nonlocal buffer, pending_journal
         if buffer:
             append_jsonl(out_path, buffer)
             buffer = []
+        for gkey, s in pending_journal:
+            append_journal(journal_path, game_key=gkey, seed=s)
+        pending_journal = []
+
+    def handle_result(result: GameResult):
+        nonlocal total_decisions, finished_games, buffer, pending_journal
+        buffer.extend(result.records)
+        pending_journal.append((result.game_key, result.seed))
+        total_decisions += result.num_decisions
+        finished_games += 1
+        if result.winner:
+            winners[result.winner] = winners.get(result.winner, 0) + 1
+        if finished_games % chunk_flush == 0:
+            flush()
+
+    if not planned:
+        if not out_path.exists():
+            write_jsonl(out_path, [])
+        return {
+            "num_games": 0,
+            "num_decisions": 0,
+            "skipped_games": skipped,
+            "winners": winners,
+            "out_path": str(out_path),
+            "journal_path": str(journal_path),
+            "seeds": seeds,
+            "bot_names": bot_names,
+            "map_type": map_type.upper(),
+            "base_seed": seed,
+            "resume": resume,
+            "catanatron_commit": CATANATRON_COMMIT,
+            "source_commit": resolve_source_commit(),
+        }
 
     if workers <= 1:
-        for s in tqdm(seeds, total=num_games, desc="games"):
+        for s, _gkey in tqdm(planned, total=len(planned), desc="games"):
             result = play_one(bot_names, s, map_type=map_type, vps_to_win=vps_to_win)
-            buffer.extend(result.records)
-            total_decisions += result.num_decisions
-            finished_games += 1
-            if result.winner:
-                winners[result.winner] = winners.get(result.winner, 0) + 1
-            if finished_games % chunk_flush == 0:
-                flush()
+            handle_result(result)
     else:
+        jobs = [(bot_names, s, map_type, vps_to_win) for s, _ in planned]
         with ProcessPoolExecutor(max_workers=workers) as pool:
             futures = [pool.submit(_play_one_job, job) for job in jobs]
-            for fut in tqdm(as_completed(futures), total=num_games, desc="games"):
-                result = fut.result()
-                buffer.extend(result.records)
-                total_decisions += result.num_decisions
-                finished_games += 1
-                if result.winner:
-                    winners[result.winner] = winners.get(result.winner, 0) + 1
-                if finished_games % chunk_flush == 0:
-                    flush()
+            for fut in tqdm(as_completed(futures), total=len(planned), desc="games"):
+                handle_result(fut.result())
 
     flush()
     if not out_path.exists():
@@ -145,12 +249,17 @@ def generate_trajectories(
     return {
         "num_games": finished_games,
         "num_decisions": total_decisions,
+        "skipped_games": skipped,
         "winners": winners,
         "out_path": str(out_path),
+        "journal_path": str(journal_path),
         "seeds": seeds,
         "bot_names": bot_names,
-        "map_type": map_type,
+        "map_type": map_type.upper(),
         "base_seed": seed,
+        "resume": resume,
+        "catanatron_commit": CATANATRON_COMMIT,
+        "source_commit": resolve_source_commit(),
     }
 
 
@@ -158,7 +267,6 @@ def sample_bot_mix(rng: random.Random | None = None) -> list[str]:
     """Default Phase-0 bot ladder mix (4 seats)."""
     rng = rng or random.Random()
     ladder = ["random", "weightedrandom", "valuefunction", "alphabeta"]
-    # Keep diversity; shuffle seating for seat-bias control.
     seats = ladder.copy()
     rng.shuffle(seats)
     return seats

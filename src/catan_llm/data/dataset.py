@@ -9,9 +9,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from catan_llm import __version__
+from catan_llm.data.identity import CATANATRON_COMMIT, PROMPT_VERSION, resolve_source_commit
 from catan_llm.data.parser import format_assistant_target
 from catan_llm.data.renderer import render_system_prompt, render_user_prompt
-from catan_llm.data.schema import DatasetManifest, DecisionRecord
+from catan_llm.data.schema import DatasetManifest, DecisionRecord, require_schema_v2
 from catan_llm.sim.trajectories import read_jsonl
 
 
@@ -131,8 +132,11 @@ def build_chat_dataset(
     name: str = "expert-smoke",
     version: str = "v0",
     include_rationale: bool = True,
+    require_v2: bool = True,
 ) -> DatasetManifest:
     records = read_jsonl(Path(trajectory_path))
+    if require_v2:
+        require_schema_v2(records, context="build_chat_dataset")
     # Drop decisions where action wasn't in the listed legal set.
     records = [r for r in records if r.action_index >= 0]
     splits = split_by_game(records)
@@ -152,18 +156,26 @@ def build_chat_dataset(
 
     bot_mix = sorted({r.expert_policy.value for r in records})
     seeds = sorted({r.seed for r in records})
+    bot_config = records[0].bot_config if records else []
+    map_type = records[0].map_type if records else "BASE"
     manifest = DatasetManifest(
         name=name,
         version=version,
+        schema_version="v2",
+        prompt_version=PROMPT_VERSION,
         created_at=datetime.now(timezone.utc).isoformat(),
+        source_commit=resolve_source_commit(),
+        catanatron_commit=CATANATRON_COMMIT,
         generator_versions={"catan_llm": __version__},
         bot_mix=bot_mix,
+        bot_config=bot_config,
         seeds=seeds,
-        num_games=len({r.game_id for r in records}),
+        map_type=map_type,
+        num_games=len({r.game_key for r in records}),
         num_decisions=len(records),
         split_counts=split_counts,
         checksums=checksums,
-        notes="Phase-0 smoke dataset; splits by game_id",
+        notes="Phase-0.5 dataset; schema v2 required; splits still by game_id until T4",
     )
     (out_dir / "manifest.json").write_text(
         manifest.model_dump_json(indent=2), encoding="utf-8"

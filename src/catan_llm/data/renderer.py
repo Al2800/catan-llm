@@ -15,6 +15,9 @@ from catanatron.models.player import Color
 from catanatron.state_functions import player_key
 
 from catan_llm.data.actions import RESOURCE_ABBREV, format_action
+from catan_llm.data.identity import PROMPT_VERSION
+
+__all__ = ["PROMPT_VERSION", "render_system_prompt", "render_user_prompt", "compact_state_dict"]
 
 SYSTEM_RULES = """You are an expert Settlers of Catan player.
 

@@ -29,7 +29,19 @@ from catan_llm.sim.adapter import generate_trajectories
     default=Path("data/raw/trajectories.jsonl"),
     show_default=True,
 )
-def main(games, seed, bots, map_type, vps, workers, out_path):
+@click.option(
+    "--resume/--no-resume",
+    default=True,
+    show_default=True,
+    help="Skip game_keys already recorded in the sidecar journal (default: resume).",
+)
+@click.option(
+    "--overwrite",
+    is_flag=True,
+    default=False,
+    help="Wipe existing jsonl + journal before writing (explicit; never done implicitly).",
+)
+def main(games, seed, bots, map_type, vps, workers, out_path, resume, overwrite):
     bot_names = [b.strip() for b in bots.split(",") if b.strip()]
     summary = generate_trajectories(
         bot_names=bot_names,
@@ -39,6 +51,8 @@ def main(games, seed, bots, map_type, vps, workers, out_path):
         map_type=map_type,
         vps_to_win=vps,
         workers=workers,
+        resume=resume,
+        overwrite=overwrite,
     )
     click.echo(json.dumps(summary, indent=2))
 

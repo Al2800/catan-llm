@@ -54,11 +54,11 @@ Interpretation: proves the loop wires together. It is **not** evidence of Catan 
 
 | Gap | Task |
 |---|---|
-| Schema still v1-ish in code; contract is v2 | T1 |
-| Train/play prompt mismatch + no `prompt_version` | T2 |
-| MINI maps broken / silent fallback | T3 |
+| Schema v2 identity fields landed; prompt parity still open | T1 done → T2 |
+| Train/play prompt mismatch (compact SFT prompts remain) | T2 |
+| MINI maps fail-loud via `MINI_MAP_TEMPLATE` | T3 done |
 | Splits on UUID; no seed registry wiring | T4 |
-| Generation deletes outputs | T5 |
+| Resume-safe append + journal (no silent unlink) | T5 done |
 | Eval missing fallback-separated metrics / WR win-share gap | T6 |
 | Gates not enforced in CI | T7 |
 | No local 8B QLoRA proof at 4096; revision unpinned | T8 |
@@ -66,6 +66,19 @@ Interpretation: proves the loop wires together. It is **not** evidence of Catan 
 | Tier A rationales are restatements | Phase 1 (after 0.5) |
 | `/setup-matt-pocock-skills` not run | optional (needed for ticket/triage skills) |
 | GPL distribution posture | owner decision before combined packaging |
+
+## Resume-safe generation (T5)
+
+`catan-generate-data` / `generate_trajectories`:
+
+| Flag | Behavior |
+|---|---|
+| `--resume` (default) | Append-only JSONL; skip `game_key`s listed in `<out>.journal` |
+| `--no-resume` | Refuse if output/journal already non-empty |
+| `--overwrite` | Explicitly wipe JSONL + journal, then write fresh |
+
+Completed outputs are never `unlink()`'d at job start. Journal lines are
+`{"game_key": "...", "seed": N}`.
 
 ## Commands
 

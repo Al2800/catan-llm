@@ -42,6 +42,7 @@ def main(games, seed, max_steps, max_samples, model, work_dir, skip_train, eval_
         out_path=traj_path,
         vps_to_win=8,
         workers=1,
+        overwrite=True,
     )
     click.echo(json.dumps(summary, indent=2))
 

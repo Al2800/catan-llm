@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from catanatron.models.player import Color, Player, RandomPlayer
 from catanatron.players.minimax import AlphaBetaPlayer
 from catanatron.players.value import ValueFunctionPlayer
@@ -17,10 +19,25 @@ BOT_ALIASES = {
 }
 
 
-def make_player(name: str, color: Color, **overrides) -> tuple[Player, ExpertPolicy]:
+def normalize_bot_name(name: str) -> str:
     key = name.strip().lower()
     if key not in BOT_ALIASES:
         raise ValueError(f"Unknown bot '{name}'. Choose from: {sorted(BOT_ALIASES)}")
+    return key
+
+
+def bot_config_for_names(bot_names: list[str]) -> list[dict[str, Any]]:
+    """Ordered seat list with bot kind + params (schema v2 bot_config)."""
+    config: list[dict[str, Any]] = []
+    for name in bot_names:
+        key = normalize_bot_name(name)
+        _cls, _policy, defaults = BOT_ALIASES[key]
+        config.append({"name": key, "params": dict(defaults)})
+    return config
+
+
+def make_player(name: str, color: Color, **overrides) -> tuple[Player, ExpertPolicy]:
+    key = normalize_bot_name(name)
     cls, policy, defaults = BOT_ALIASES[key]
     kwargs = {**defaults, **overrides}
     return cls(color, **kwargs), policy

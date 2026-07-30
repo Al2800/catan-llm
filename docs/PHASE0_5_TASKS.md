@@ -30,11 +30,12 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 
 ---
 
-## T1 — Schema v2 + identity fields
+## T1 — Schema v2 + identity fields ✅
 
 **Goal:** Trajectory records carry contract v2 fields.  
+**Status:** done (ticket 01)  
 **Deps:** none  
-**Touch:** `src/catan_llm/data/schema.py`, `sim/trajectories.py`, tests.  
+**Touch:** `src/catan_llm/data/schema.py`, `data/identity.py`, `sim/trajectories.py`, tests.  
 **Done when:**
 - Records include `schema_version="v2"`, `game_key`, `map_hash`, `bot_config`, `bot_config_hash`, `prompt_version`, `catanatron_commit`, `source_commit`
 - Unit tests cover round-trip
@@ -50,9 +51,10 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - `tests/test_prompt_parity.py` asserts system/user equality on ≥20 seeded games
 - `PROMPT_VERSION` constant exists and is stored on records
 
-## T3 — MINI maps fail-loud
+## T3 — MINI maps fail-loud ✅
 
 **Goal:** `map_type=MINI` uses `MINI_MAP_TEMPLATE`.  
+**Status:** done (ticket 02)  
 **Deps:** none  
 **Touch:** `sim/adapter.py`, tests.  
 **Done when:**
@@ -71,11 +73,12 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - CLI accepts `--seed-range-name train_main` (or equivalent)
 - Cohort stop condition documented (SCOPE §5.2) — do not blindly burn 50k games
 
-## T5 — Resume-safe shard writes
+## T5 — Resume-safe shard writes ✅
 
 **Goal:** Crash-safe generation.  
+**Status:** done (ticket 03)  
 **Deps:** none  
-**Touch:** `sim/adapter.py`.  
+**Touch:** `sim/adapter.py`, `scripts/generate_trajectories.py`, `docs/PHASE0.md`.  
 **Done when:**
 - No `unlink()` of completed outputs at job start
 - Atomic rename or append-only + journal of completed `game_key`s

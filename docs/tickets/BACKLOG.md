@@ -17,9 +17,9 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | ID | Title | Phase | Status | Blocked by |
 |---|---|---|---|---|
 | [00](issues/00-merge-phase0-branch.md) | Merge Phase-0 branch to main (or pin agents to it) | Meta | done | — |
-| [01](issues/01-schema-v2.md) | Schema v2 + identity fields | 0.5 | ready-for-agent | — |
-| [02](issues/02-mini-maps.md) | MINI maps fail-loud | 0.5 | ready-for-agent | — |
-| [03](issues/03-resume-safe-writes.md) | Resume-safe shard writes | 0.5 | ready-for-agent | — |
+| [01](issues/01-schema-v2.md) | Schema v2 + identity fields | 0.5 | done | — |
+| [02](issues/02-mini-maps.md) | MINI maps fail-loud | 0.5 | done | — |
+| [03](issues/03-resume-safe-writes.md) | Resume-safe shard writes | 0.5 | done | — |
 | [04](issues/04-prompt-parity.md) | Canonical train/play prompt parity | 0.5 | ready-for-agent | 01 |
 | [05](issues/05-splits-seed-registry.md) | Stable splits + seed registry wiring | 0.5 | ready-for-agent | 01 |
 | [06](issues/06-eval-gate-b-metrics.md) | Eval Gate-B metrics + 4p fixtures | 0.5 | ready-for-agent | 01 |
@@ -45,7 +45,7 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 
 ## Frontier right now (can start)
 
-- **01, 02, 03** — Wave A (parallel)
+- **04, 05, 06** — Wave B (after 01; 07 after 04)
 - **09** — owner GPU anytime (blocks Phase 1)
 
 ## Already done (not ticketed as open work)
