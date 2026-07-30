@@ -12,6 +12,7 @@
 - [`SEED_REGISTRY.md`](SEED_REGISTRY.md) — disjoint seed ranges (train/val/test/holdout/champion)
 - [`RL_SPEC.md`](RL_SPEC.md) — Phase-3 reward / anti-hacking skeleton (entry gate)
 - [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md) — assignable Phase 0.5 work units
+- [`tickets/BACKLOG.md`](tickets/BACKLOG.md) — full ticket backlog (status of outstanding work)
 - [`../AGENTS.md`](../AGENTS.md) — handoff rules for coding agents
 - [`../configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml) — Phase-2 QLoRA training sketch
 
