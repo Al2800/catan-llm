@@ -15,6 +15,10 @@ datasets/
 *.jsonl
 !data/manifests/*.jsonl
 
+# Local tooling
+.venv/
+outputs/
+
 # Model artifacts
 checkpoints/
 *.safetensors
