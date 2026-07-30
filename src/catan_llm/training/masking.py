@@ -21,9 +21,23 @@ class MaskedBatch:
     text: str
 
 
+DEFAULT_QWEN_CONFIG = "configs/qwen3.5-9b-qlora.yaml"
+
+
 def load_qwen_config(path: Path | None = None) -> dict[str, Any]:
-    cfg_path = path or Path(__file__).resolve().parents[3] / "configs" / "qwen3-8b-qlora.yaml"
-    return yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+    cfg_path = path or Path(__file__).resolve().parents[3] / DEFAULT_QWEN_CONFIG
+    payload = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or "model" not in payload:
+        raise ValueError(
+            f"{cfg_path} is not a training config (expected model/data/train keys). "
+            "Use configs/qwen3.5-9b-qlora.yaml"
+        )
+    return payload
+
+
+def qwen_model_name(path: Path | None = None) -> str:
+    model = load_qwen_config(path).get("model") or {}
+    return str(model.get("name_or_path") or "Qwen/Qwen3.5-9B")
 
 
 def qwen_revision(path: Path | None = None) -> str | None:

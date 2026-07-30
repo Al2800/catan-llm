@@ -4,7 +4,7 @@ Training an 8–12B parameter open-weights LLM to play Settlers of Catan inside 
 [Catanatron](https://github.com/bcollazo/catanatron) simulator.
 
 Pipeline: bulk self-play in Catanatron → structured + natural-language decision
-datasets → SFT (QLoRA) on **Qwen3-8B** → GRPO/RLVR with engine-verifiable rewards →
+datasets → SFT (QLoRA) on **Qwen3.5-9B** → GRPO/RLVR with engine-verifiable rewards →
 live play back inside the simulator against Catanatron's bot ladder.
 
 ## Agent skills
@@ -28,7 +28,7 @@ to wire issue tracker / triage defaults for this repo.
 | [`docs/tickets/BACKLOG.md`](docs/tickets/BACKLOG.md) | **Ticket backlog** — status of all outstanding work |
 | [`docs/RL_SPEC.md`](docs/RL_SPEC.md) | Phase-3 RL entry template |
 | [`docs/PHASE0.md`](docs/PHASE0.md) | Phase 0 status + known gaps |
-| [`configs/qwen3-8b-qlora.yaml`](configs/qwen3-8b-qlora.yaml) | Phase-2 QLoRA sketch (`max_seq_length: 4096`) |
+| [`configs/qwen3.5-9b-qlora.yaml`](configs/qwen3.5-9b-qlora.yaml) | Phase-2 QLoRA sketch (`max_seq_length: 4096`) |
 
 ## Status
 
@@ -38,7 +38,7 @@ to wire issue tracker / triage defaults for this repo.
 
 Locked decisions (see SCOPE §12):
 
-- Base model: **Qwen3-8B** (Apache-2.0), QLoRA-first
+- Base model: **Qwen3.5-9B** (`Qwen/Qwen3.5-9B`, Apache-2.0), QLoRA-first
 - Primary hardware: RTX 5060 Ti 16GB (local), burst rentals for RL scale
 - Train/play prompts must be identical; schema **v2** + `prompt_version`
 - Privileged teacher distillation OK; learner prompts + Tier A text stay POV-limited
@@ -53,7 +53,7 @@ Locked decisions (see SCOPE §12):
 
 ```
 AGENTS.md
-configs/qwen3-8b-qlora.yaml
+configs/qwen3.5-9b-qlora.yaml
 docs/         # scope + contracts + task cards
 src/catan_llm/
   sim/ data/ eval/ play/ training/ serving/ scripts/
@@ -66,7 +66,7 @@ tests/
 # Python 3.11+
 pip install -e ".[dev]"          # core + tests
 pip install -e ".[train]"        # torch / transformers / TRL (smoke)
-# Local 8B QLoRA also needs bitsandbytes + Blackwell-capable torch/vLLM
+# Local Qwen3.5-9B QLoRA also needs bitsandbytes + Blackwell-capable torch/vLLM
 # — see docs/ENV_BLACKWELL.md
 ```
 
@@ -85,8 +85,8 @@ catan-sft-smoke --games 8 --max-steps 20 --work-dir outputs/sft_smoke
 ## Roadmap snapshot
 
 1. **Phase 0** — plumbing spike *(done)*
-2. **Phase 0.5** — schema v2, parity, MINI, seeds, CI gates, 5060 Ti 8B smoke *(next — see task cards)*
+2. **Phase 0.5** — schema v2, parity, MINI, seeds, CI gates, 5060 Ti Qwen3.5-9B smoke *(next — see task cards)*
 3. **Phase 1** — ≥100k dataset + holdout + quality report
-4. **Phase 2** — Qwen3-8B QLoRA SFT vs bot ladder
+4. **Phase 2** — Qwen3.5-9B QLoRA SFT vs bot ladder
 5. **Phase 3** — GRPO toward pinned AlphaBeta fixture (after `RL_SPEC.md` filled)
 6. **Phase 4** — scale / polish / write-up

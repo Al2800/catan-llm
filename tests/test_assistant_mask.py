@@ -14,6 +14,7 @@ from catan_llm.training.masking import (
     assistant_span_intact,
     build_assistant_only_labels,
     qwen_max_seq_length,
+    qwen_model_name,
     qwen_revision,
 )
 
@@ -67,16 +68,16 @@ def test_qwen_config_max_seq_length_floor():
 def test_qwen_one_batch_mask_when_revision_pinned():
     """Full Qwen template + loss check — skipped until ticket 09 pins revision."""
     revision = qwen_revision()
+    model_name = qwen_model_name()
     if revision is None:
         pytest.skip(
-            "Qwen model.revision is null in configs/qwen3-8b-qlora.yaml; "
+            f"{model_name} model.revision is null in configs/qwen3.5-9b-qlora.yaml; "
             "pin it in ticket 09 before Phase 1 (assistant-mask must then pass)."
         )
 
     transformers = pytest.importorskip("transformers")
     torch = pytest.importorskip("torch")
 
-    model_name = "Qwen/Qwen3-8B-Instruct"
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         model_name, revision=revision, trust_remote_code=True
     )

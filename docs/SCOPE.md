@@ -14,7 +14,7 @@
 - [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md) — assignable Phase 0.5 work units
 - [`tickets/BACKLOG.md`](tickets/BACKLOG.md) — full ticket backlog (status of outstanding work)
 - [`../AGENTS.md`](../AGENTS.md) — handoff rules for coding agents
-- [`../configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml) — Phase-2 QLoRA training sketch
+- [`../configs/qwen3.5-9b-qlora.yaml`](../configs/qwen3.5-9b-qlora.yaml) — Phase-2 QLoRA training sketch
 
 ---
 
@@ -118,7 +118,7 @@ Five components, each independently runnable, connected by artifacts on disk:
 
 Two stages (details in §7), driven by config files:
 
-- **SFT:** behavior-clone expert decisions (+ Tier A rationales) into Qwen3-8B-Instruct via **QLoRA**. Config sketch: [`configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml). Required: assistant-token-only loss, gradient checkpointing, pinned model revision, VRAM telemetry.
+- **SFT:** behavior-clone expert decisions (+ Tier A rationales) into **Qwen3.5-9B** via **QLoRA**. Config sketch: [`configs/qwen3.5-9b-qlora.yaml`](../configs/qwen3.5-9b-qlora.yaml). Required: assistant-token-only loss, gradient checkpointing, pinned model revision, VRAM telemetry.
 - **RL (GRPO with verifiable rewards):** decision-level prompts with group rollouts scored by the engine (legality, immediate VP/shape heuristics) plus full-game outcome rewards (win, VP margin). Framework target: TRL or verl with vLLM rollouts. Full reward spec is a Phase-3 entry gate (see §7.2 / [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md)).
 
 ### 4.4 Evaluation arena (`eval/`)
@@ -184,12 +184,13 @@ Candidates (final pick is a Phase-0 spike; all are fine-tunable and vLLM-servabl
 
 | Candidate | Size | Notes |
 |---|---|---|
-| **Qwen3-8B / Qwen3-14B** | 8–14B | Strong reasoning-per-param; popular RLVR base; Apache-2.0 |
+| **Qwen3.5-9B** | ~9B | Current 8B-class Qwen3.5 post-trained checkpoint; Apache-2.0 |
+| **Qwen3-8B** | 8B | Older line; `Qwen3-8B-Instruct` no longer resolves on HF Hub |
 | **Llama-3.1-8B-Instruct** | 8B | Best ecosystem support; community license |
 | **Gemma-3-12B-it** | 12B | Top of the target band; strong instruction following |
 | **Mistral-Nemo-12B** | 12B | 128k context — useful for long game histories |
 
-**Decision (locked): Qwen3-8B** (Apache-2.0) as the base model — fastest iteration, cheapest RL rollouts — using its instruct checkpoint, since we need reliable structured output. Prove the loop end-to-end at 8B, then evaluate a 12B-class step-up with the same pipeline (rental-only on current hardware, see §9).
+**Decision (locked, updated 2026-07-30): `Qwen/Qwen3.5-9B`** (Apache-2.0) as the base model. Qwen3.5 has no dense 8B; 9B is the nearest 8B-class checkpoint after `Qwen/Qwen3-8B-Instruct` stopped resolving on HF Hub. Prove the loop end-to-end at ~9B, then evaluate a 12B-class step-up with the same pipeline (rental-only on current hardware, see §9).
 
 ## 7. Training strategy
 
@@ -206,7 +207,7 @@ Candidates (final pick is a Phase-0 spike; all are fine-tunable and vLLM-servabl
 ### Stage 1 — SFT (behavior cloning)
 
 - Data: `expert-trajectories` + Tier A commentary (assistant = short rationale + chosen action in strict JSON), built from the **canonical renderer** (schema v2 / [`DATA_CONTRACT.md`](DATA_CONTRACT.md)).
-- Loss on **assistant tokens only** (`assistant_only_loss: true`; do **not** also set conflicting `completion_only_loss` on chat data). 2–3 epochs; cosine LR ~1e-4 (QLoRA). Config: [`configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml).
+- Loss on **assistant tokens only** (`assistant_only_loss: true`; do **not** also set conflicting `completion_only_loss` on chat data). 2–3 epochs; cosine LR ~1e-4 (QLoRA). Config: [`configs/qwen3.5-9b-qlora.yaml`](../configs/qwen3.5-9b-qlora.yaml).
 - **Context budget (measured 2026-07-30):** canonical system ≈1.25k tokens; user ≈1.0–1.1k; total ≈2.3–2.5k before the assistant label (SmolLM2 tokenizer; Qwen same order). Therefore SFT `max_seq_length` must be **≥4096**. Truncating at 2048 with `keep_start` would cut the assistant JSON and silently destroy the learning signal.
 - **4096 is a label-safety floor, not a proven VRAM fit.** Prior “~10–14GB” estimates assumed shorter contexts. Phase 0.5 T8 must measure peak VRAM on the 5060 Ti with the **pinned Qwen revision** at 4096. If OOM: compress the canonical prompt (move static board to a cached system prefix / shorten rules) or use rental compute — **never** lower `max_seq_length` below the no-truncation budget.
 - **Masking gate:** one-batch test on the pinned Qwen tokenizer/chat template must prove system/user tokens are masked, assistant JSON tokens have nonzero loss, and the full `{"action":…}` span is present (Phase 0.5 T9).
@@ -278,7 +279,7 @@ All evals run through the same arena code with pinned seeds and published config
 
 | Tier | Hardware | What it supports |
 |---|---|---|
-| **Local (locked): RTX 5060 Ti 16GB** | Owner's workstation | Data generation, dataset builds, eval arena, **QLoRA SFT of Qwen3-8B** (~10–14GB VRAM with 4-bit base + gradient checkpointing), 4-bit vLLM serving for live play, **small-scale GRPO** (feasible but slow) |
+| **Local (locked): RTX 5060 Ti 16GB** | Owner's workstation | Data generation, dataset builds, eval arena, **QLoRA SFT of Qwen3.5-9B** (~10–14GB VRAM with 4-bit base + gradient checkpointing; prove in ticket 09), 4-bit vLLM serving for live play, **small-scale GRPO** (feasible but slow) |
 | **Dev / CPU** | Any modern machine | Simulator (thousands of games/min), dataset builds, bot-vs-bot eval, CI, Stage-0 spike with a small model |
 | **Burst rental** | 1× A100/H100 80GB | Larger-batch QLoRA/LoRA SFT, meaningfully faster GRPO iterations, 12B QLoRA |
 | **Scale rental** | 2–4× 80GB GPUs | Full-FT of 8B (≈60–88GB), serious GRPO at 8–12B, 12–14B full-FT (≈140–174GB) |
@@ -358,7 +359,7 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 ### Locked 2026-07-30
 
 1. **Repo strategy → split.** Canonical home is `catan-llm` (this repo), not `dataversen`.
-2. **Base model → Qwen3-8B** (Apache-2.0, instruct checkpoint). 12B-class step-up deferred to Phase 4 and rental-only.
+2. **Base model → `Qwen/Qwen3.5-9B`** (Apache-2.0; nearest 8B-class Qwen3.5 checkpoint). 12B-class step-up deferred to Phase 4 and rental-only.
 3. **Compute → owner's RTX 5060 Ti 16GB is the primary box.** QLoRA-first mandatory; full-FT / 12B / serious GRPO behind burst rentals.
 4. **Teacher-model commentary → deferred.** Tier A only through Phase 2; revisit Tier B after SFT results.
 5. **Trading → later.** Catanatron-native action space only for the initial project.
@@ -369,7 +370,7 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 7. **Experiment tracking → local JSON reports first**; W&B optional later.
 8. **Train/play consistency is a hard gate.** One canonical renderer; compact alternate training prompts are forbidden for labeled SFT data.
 9. **AlphaBeta claims require a pre-registered fixture** (commit, depth, seats, maps, seeds, metrics) in [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md).
-10. **No ≥100k dataset build until local 8B QLoRA smoke succeeds** on the 5060 Ti.
+10. **No ≥100k dataset build until local Qwen3.5-9B QLoRA smoke succeeds** on the 5060 Ti.
 11. **Smoke parse/legality ≠ skill.** Promotion uses held-out win-rate / VP / failure taxonomy with fallbacks accounted separately.
 12. **Fallback policy → `first_legal`** (engine-ordered). Do not use highest-pip fallback unless a future protocol version changes this.
 13. **Trajectory schema → v2** for contract fields (`game_key`, `map_hash`, `prompt_version`, …). Legacy plumbing records labelled v1 are not Phase-1-valid.
@@ -424,3 +425,4 @@ Engineering skills are vendored under `.cursor/skills/engineering/`. They are **
 | 2026-07-30 | Handoff review → schema v2 + `prompt_version`, token budget ≥4096, seed registry, locked `first_legal` fallback, softened G5, Tier A feature list, decoding locks, `AGENTS.md` / Phase 0.5 task cards / `RL_SPEC.md` skeleton, handoff readiness section. |
 | 2026-07-30 | Second review → privileged-teacher POV policy; Gate B win-share fix; 4p headline fixtures; 4096 VRAM caveat; assistant-mask + teacher-audit task (T9); Phase-1 cohort plan; branch/base handoff warning; Phase 0.5 dependency graph. |
 | 2026-07-30 | Phase 0 pack merged to `main`; ticket 00 done; subsequent work stays on `main`. |
+| 2026-07-30 | Base model lock → `Qwen/Qwen3.5-9B` (Qwen3-8B-Instruct no longer resolves; Qwen3.5 has no dense 8B). |

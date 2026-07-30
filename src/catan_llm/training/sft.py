@@ -1,7 +1,7 @@
 """Tiny SFT smoke loop (TRL) for Phase 0.
 
 Default model is intentionally tiny so CPU CI / laptop smoke stays feasible.
-Real Phase-2 training uses Qwen3-8B + QLoRA (see docs/SCOPE.md).
+Real Phase-2 training uses Qwen3.5-9B + QLoRA (see docs/SCOPE.md).
 """
 
 from __future__ import annotations

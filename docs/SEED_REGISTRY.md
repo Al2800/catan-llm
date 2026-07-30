@@ -25,7 +25,7 @@ Update this table in the same PR that allocates a new range.
 2. Published eval numbers may only use `eval_holdout`, `ladder_*`, or `champion_*`.
 3. Once a `champion_*` range is used in a promotion report, it is **immutable** for that protocol version.
 4. New ranges are appended below existing ones; never reuse a retired range for a different purpose.
-5. Configs (e.g. `configs/qwen3-8b-qlora.yaml`) must reference a **name** from this table, not a magic number alone.
+5. Configs (e.g. `configs/qwen3.5-9b-qlora.yaml`) must reference a **name** from this table, not a magic number alone.
 
 ## How to allocate
 

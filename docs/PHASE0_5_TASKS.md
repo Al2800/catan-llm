@@ -114,7 +114,8 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 
 **Goal:** Prove 5060 Ti path at label-safe context.  
 **Deps:** none (ideally after T2 for real prompts)  
-**Touch:** env pins, `configs/qwen3-8b-qlora.yaml`, `outputs/hw_smoke/report.json`.  
+**Touch:** env pins, `configs/qwen3.5-9b-qlora.yaml`, `outputs/hw_smoke/report.json`.  
+**Model:** `Qwen/Qwen3.5-9B` (not Qwen3-8B-Instruct — unresolvable; Qwen3.5 has no dense 8B).
 **Done when:**
 - Checklist in [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md) completed
 - Pinned Qwen **revision** recorded (no `revision: null` left in the successful report)

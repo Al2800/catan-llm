@@ -1,8 +1,9 @@
 # 15 — Production QLoRA training pipeline
 
-**What to build:** Replace the tiny SmolLM smoke with a real Qwen3-8B QLoRA
+**What to build:** Replace the tiny SmolLM smoke with a real **Qwen3.5-9B** QLoRA
 training entrypoint driven by the pinned config (assistant-only loss, grad
-checkpointing, revision pin, VRAM telemetry).
+checkpointing, revision pin, VRAM telemetry). Config:
+[`configs/qwen3.5-9b-qlora.yaml`](../../../configs/qwen3.5-9b-qlora.yaml).
 
 **Blocked by:** 09, 14
 

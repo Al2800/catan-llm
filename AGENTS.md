@@ -84,9 +84,9 @@ Training extras: `pip install -e ".[train]"` (+ bitsandbytes / Blackwell torch o
 ## Current code vs docs
 
 Phase 0.5 software cards **01–08** landed on `main`; ticket **10** (Tier A feature
-rationales) also landed. Remaining Phase 0.5: **09** (owner-GPU 8B QLoRA smoke + pin
-`model.revision`). Qwen assistant-mask one-batch skips until that pin exists. Do not
-start the ≥100k data burn until **09** exits.
+rationales) also landed. Remaining Phase 0.5: **09** (owner-GPU Qwen3.5-9B QLoRA smoke
++ pin `model.revision` in `configs/qwen3.5-9b-qlora.yaml`). Assistant-mask one-batch
+skips until that pin exists. Do not start the ≥100k data burn until **09** exits.
 
 ## License
 

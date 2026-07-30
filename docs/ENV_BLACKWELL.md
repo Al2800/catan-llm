@@ -29,10 +29,10 @@ Run on the 5060 Ti; save outputs under `outputs/hw_smoke/`:
    - `nvidia-smi` shows 16GB and a non-zero CUDA capability
    - `torch.cuda.is_available()` true; print `torch.__version__`, CUDA version, device name
 2. **4-bit model load**
-   - Load `Qwen/Qwen3-8B-Instruct` (exact revision recorded) in 4-bit with bitsandbytes
-   - Record peak VRAM
+   - Load `Qwen/Qwen3.5-9B` (exact revision recorded) in 4-bit with bitsandbytes
+   - Record peak VRAM (9B multimodal may be tighter than classic text-only 8B)
 3. **QLoRA train micro-step**
-   - 10–20 optimizer steps using [`configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml) on a tiny JSONL shard built from the **canonical** renderer
+   - 10–20 optimizer steps using [`configs/qwen3.5-9b-qlora.yaml`](../configs/qwen3.5-9b-qlora.yaml) on a tiny JSONL shard built from the **canonical** renderer
    - `gradient_checkpointing: true`, batch size 1, **`max_seq_length: 4096`** (label-safety floor; 2048 is unsafe)
    - **Pin** `model.revision` to a concrete commit SHA in the successful report
    - Peak VRAM logged. Target ≤14GB; if OOM at 4096, try prompt compression (shorter rules / board caching) or document rental fallback — **never** lower `max_seq_length` below the no-truncation budget
@@ -46,10 +46,11 @@ Run on the 5060 Ti; save outputs under `outputs/hw_smoke/`:
 
 ## 4. Known constraints
 
-- Full fine-tune of 8B: **not** local
+- Full fine-tune of ~9B: **not** local
 - 12B training: **rental only**
 - Serious GRPO (large G, long contexts): prefer **A100/H100 burst**
-- Default CI runners have no GPU — keep HF 8B downloads out of CI
+- Default CI runners have no GPU — keep HF Qwen3.5-9B downloads out of CI
+- Do not use `Qwen/Qwen3-8B-Instruct` (unresolvable) or invent `Qwen3.5-8B`
 
 ## 5. Failure modes to expect
 

@@ -25,7 +25,7 @@ Handoff pack:
 | [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md) | Assignable T1–T8 cards |
 | [`RL_SPEC.md`](RL_SPEC.md) | Phase-3 entry template |
 | [`../AGENTS.md`](../AGENTS.md) | Do/don't for coding agents |
-| [`../configs/qwen3-8b-qlora.yaml`](../configs/qwen3-8b-qlora.yaml) | `max_seq_length: 4096` |
+| [`../configs/qwen3.5-9b-qlora.yaml`](../configs/qwen3.5-9b-qlora.yaml) | `max_seq_length: 4096` |
 
 ## Phase-0 decisions
 
@@ -33,7 +33,7 @@ Handoff pack:
 |---|---|
 | Package layout | `src/catan_llm/{sim,data,eval,play,training,serving}` |
 | Catanatron pin | git `82aae93` (declared 3.3.0; PyPI still at 3.2.1) |
-| Smoke base model | `HuggingFaceTB/SmolLM2-135M-Instruct` (prove loop; Qwen3-8B is Phase 2) |
+| Smoke base model | `HuggingFaceTB/SmolLM2-135M-Instruct` (prove loop; Qwen3.5-9B is Phase 2) |
 | Experiment tracking | Local JSON reports (`outputs/**/report.json`); W&B optional later |
 | Domestic trading | Out of scope (SCOPE §12.5) — renderer/parser omit it |
 | Fallback | `first_legal` |

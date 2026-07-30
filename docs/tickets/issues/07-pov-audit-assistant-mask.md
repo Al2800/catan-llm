@@ -16,5 +16,5 @@ hits the assistant JSON on the pinned Qwen chat template.
 - [x] If Qwen revision not yet pinned, test skips clearly; must pass after ticket 09 pins it, before Phase 1
 
 **Notes:** SmolLM one-batch runs in CI when transformers/torch present. Qwen
-revision one-batch skips until `configs/qwen3-8b-qlora.yaml` pins `model.revision`
-(ticket 09).
+revision one-batch skips until `configs/qwen3.5-9b-qlora.yaml` pins `model.revision`
+(ticket 09; model = `Qwen/Qwen3.5-9B`).

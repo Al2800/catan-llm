@@ -16,7 +16,7 @@ Improve a Stage-1 SFT checkpoint on the pre-registered AlphaBeta fixture
 |---|---|
 | Init policy | path/revision of Stage-1 SFT checkpoint |
 | Reference policy | frozen SFT copy for KL |
-| Base model | Qwen3-8B-Instruct + QLoRA adapters |
+| Base model | Qwen3.5-9B (`Qwen/Qwen3.5-9B`) + QLoRA adapters |
 | Prompt renderer | canonical only (`prompt_version=…`) |
 
 ## 3. Rollout settings
