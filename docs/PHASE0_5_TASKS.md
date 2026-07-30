@@ -99,14 +99,16 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - Zero-win seats still appear in `win_rates`
 - Fixture formats `ladder-4p` and `ab-4p` selectable
 
-## T7 — Gate tests in CI
+## T7 — Gate tests in CI ✅
 
 **Goal:** Agents see red, not prose.  
+**Status:** done (ticket 08)  
 **Deps:** T2, T3, T4, T6, T9  
 **Touch:** `tests/`, `.github/workflows/ci.yml`.  
 **Done when:**
 - Parity / MINI / schema-v2 / no-truncation / POV-rationale / assistant-mask tests run in CI
 - Unfinished items may use `xfail(strict=True)` only with a task-id reason
+- Default CI avoids downloading 8B (Qwen one-batch skips until T8 pins revision)
 
 ## T8 — Local 8B QLoRA smoke (owner GPU)
 

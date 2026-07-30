@@ -83,9 +83,9 @@ Training extras: `pip install -e ".[train]"` (+ bitsandbytes / Blackwell torch o
 
 ## Current code vs docs
 
-Wave A+B (tickets 01–06) landed on `main`: schema v2, MINI, resume writes, prompt parity,
-`game_key` splits + seed registry, Gate-B arena fixtures. Remaining Phase 0.5: **07**
-(POV/assistant-mask), **08** (CI gates), **09** (owner-GPU 8B smoke).
+Phase 0.5 software cards **01–08** landed on `main` (schema v2 through CI gates + POV/mask).
+Remaining Phase 0.5: **09** (owner-GPU 8B QLoRA smoke + pin `model.revision`). Qwen
+assistant-mask one-batch skips until that pin exists.
 
 ## License
 

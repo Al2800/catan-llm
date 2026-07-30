@@ -60,9 +60,9 @@ Interpretation: proves the loop wires together. It is **not** evidence of Catan 
 | Splits by `game_key`; `--seed-range-name` wired | T4 done |
 | Resume-safe append + journal (no silent unlink) | T5 done |
 | Gate-B metrics + `ladder-4p` / `ab-4p` fixtures | T6 done |
-| Gates not enforced in CI | T7 |
-| No local 8B QLoRA proof at 4096; revision unpinned | T8 |
-| Privileged-teacher POV audit + assistant-mask proof | T9 |
+| Contract gate tests wired in CI | T7 done |
+| No local 8B QLoRA proof at 4096; revision unpinned | T8 (owner GPU) |
+| Privileged-teacher POV audit + assistant-mask proof | T9 done (Qwen one-batch skips until T8 pin) |
 | Tier A rationales are restatements | Phase 1 (after 0.5) |
 | `/setup-matt-pocock-skills` not run | optional (needed for ticket/triage skills) |
 | GPL distribution posture | owner decision before combined packaging |

@@ -25,18 +25,35 @@ jobs:
           uv venv .venv
           source .venv/bin/activate
           uv pip install -e ".[dev]"
+          # Tokenizer/model stack for assistant-mask smoke (SmolLM — not 8B).
+          uv pip install "torch" "transformers" --index-url https://download.pytorch.org/whl/cpu
 
       - name: Ruff
         run: |
           source .venv/bin/activate
           ruff check src tests
 
-      - name: Pytest
+      - name: Pytest (full)
         run: |
           source .venv/bin/activate
           pytest -q
 
+      - name: Contract gate tests (explicit)
+        run: |
+          source .venv/bin/activate
+          # Agents should see these fail red, not only in prose.
+          # Skips: Qwen 8B one-batch until ticket 09 pins revision (clear skip message).
+          pytest -q \
+            tests/test_prompt_parity.py \
+            tests/test_sim.py::test_mini_map_fail_loud_and_differs_from_base \
+            tests/test_schema.py \
+            tests/test_no_truncation.py \
+            tests/test_teacher_pov.py \
+            tests/test_assistant_mask.py \
+            tests/test_seed_registry.py \
+            tests/test_arena.py
+
       - name: Arena smoke
         run: |
           source .venv/bin/activate
-          catan-arena --games 4 --vps 6 --no-alphabeta --out outputs/arena/ci.json
+          catan-arena --fixture bot-ladder --games 4 --vps 6 --no-alphabeta --out outputs/arena/ci.json

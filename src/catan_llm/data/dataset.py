@@ -11,6 +11,7 @@ from pathlib import Path
 from catan_llm import __version__
 from catan_llm.data.identity import CATANATRON_COMMIT, PROMPT_VERSION, resolve_source_commit
 from catan_llm.data.parser import format_assistant_target
+from catan_llm.data.pov import assert_tier_a_pov_safe
 from catan_llm.data.renderer import render_system_prompt, render_user_prompt
 from catan_llm.data.schema import DatasetManifest, DecisionRecord, require_schema_v2
 from catan_llm.sim.trajectories import read_jsonl
@@ -25,25 +26,28 @@ def _sha256_file(path: Path) -> str:
 
 
 def tier_a_rationale(record: DecisionRecord) -> str:
-    """Free template rationale derived from action type / phase."""
+    """Free template rationale derived from action type / phase (POV-safe)."""
     at = record.action_taken.action_type
     phase = record.phase
     policy = record.expert_policy.value
     if phase.startswith("BUILD_INITIAL"):
-        return f"{policy} initial placement via {at}"
-    if at in {"BUILD_SETTLEMENT", "BUILD_CITY", "BUILD_ROAD"}:
-        return f"{policy} expands board position with {at}"
-    if at in {"PLAY_KNIGHT_CARD", "MOVE_ROBBER"}:
-        return f"{policy} applies robber pressure via {at}"
-    if at.startswith("PLAY_") or at == "BUY_DEVELOPMENT_CARD":
-        return f"{policy} uses development-card line ({at})"
-    if at == "MARITIME_TRADE":
-        return f"{policy} balances hand via maritime trade"
-    if at == "END_TURN":
-        return f"{policy} ends turn; no higher-value legal build"
-    if at == "ROLL":
-        return "Must roll to start the turn"
-    return f"{policy} selects {at}"
+        text = f"{policy} initial placement via {at}"
+    elif at in {"BUILD_SETTLEMENT", "BUILD_CITY", "BUILD_ROAD"}:
+        text = f"{policy} expands board position with {at}"
+    elif at in {"PLAY_KNIGHT_CARD", "MOVE_ROBBER"}:
+        text = f"{policy} applies robber pressure via {at}"
+    elif at.startswith("PLAY_") or at == "BUY_DEVELOPMENT_CARD":
+        text = f"{policy} uses development-card line ({at})"
+    elif at == "MARITIME_TRADE":
+        text = f"{policy} balances hand via maritime trade"
+    elif at == "END_TURN":
+        text = f"{policy} ends turn; no higher-value legal build"
+    elif at == "ROLL":
+        text = "Must roll to start the turn"
+    else:
+        text = f"{policy} selects {at}"
+    assert_tier_a_pov_safe(text, context="tier_a_rationale")
+    return text
 
 
 def decision_to_chat(
@@ -62,6 +66,8 @@ def decision_to_chat(
             "decision_to_chat requires system_prompt and user_prompt from the live renderer"
         )
     reasoning = tier_a_rationale(record) if include_rationale else ""
+    if reasoning:
+        assert_tier_a_pov_safe(reasoning, context="decision_to_chat")
     assistant = format_assistant_target(record.action_index, reasoning)
     return {
         "game_id": record.game_id,

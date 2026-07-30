@@ -141,6 +141,8 @@ Publish counts in the dataset quality report.
 
 ## 8. Tier A rationales
 
+Teacher / learner observability audit: [`TEACHER_POV.md`](TEACHER_POV.md).
+
 Required style: feature-aware one-liners using **learner-observable** features only
 (SCOPE §5.1 — privileged teachers may choose actions with full state, but rationale
 text must not leak hidden opponent hands).
