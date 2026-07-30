@@ -32,7 +32,7 @@ The end state:
 ### Goals
 
 - **G1.** Reproducible pipeline from "raw simulator" → "training-ready dataset" → "trained checkpoint" → "live evaluation in the simulator".
-- **G2.** A fine-tuned 8–12B model whose Catan win rate beats Catanatron's strongest built-in bot (`AlphaBetaPlayer`) in head-to-head play, with statistically meaningful sample sizes.
+- **G2.** A fine-tuned 8–12B model whose Catan win rate beats Catanatron's strongest built-in bot (`AlphaBetaPlayer`) on the pre-registered **4-player** fixture (`ab-4p`), with statistically meaningful sample sizes (see [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md) Gate C).
 - **G3.** The model outputs structured, machine-parseable actions with a near-100% legality/parse rate, plus short natural-language reasoning (useful for the unstructured-data side and for debugging).
 - **G4.** Everything runnable as code: data generation, dataset builds, training configs, eval harness, and a live-spectate path.
 - **G5.** Local-first QLoRA path on a single 16GB GPU, with portable configs. Multi-GPU / full-FT is a **deferred Phase-4 rental path**, not a Phase-0–3 delivery goal.
