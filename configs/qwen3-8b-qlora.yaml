@@ -1,0 +1,71 @@
+# Phase-2 QLoRA SFT sketch for Qwen3-8B-Instruct on RTX 5060 Ti 16GB.
+# Normative intent: docs/SCOPE.md §7 Stage 1 + docs/ENV_BLACKWELL.md.
+# Values are starting points; peak-VRAM smoke may tighten them.
+
+model:
+  name_or_path: Qwen/Qwen3-8B-Instruct
+  revision: null  # pin a commit SHA after first successful smoke
+  trust_remote_code: true
+  torch_dtype: bfloat16
+  quantization:
+    load_in_4bit: true
+    bnb_4bit_quant_type: nf4
+    bnb_4bit_use_double_quant: true
+    bnb_4bit_compute_dtype: bfloat16
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  bias: none
+  task_type: CAUSAL_LM
+  # Adjust to Qwen3 module names if needed after inspection:
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+data:
+  # Must be built from the canonical renderer (docs/DATA_CONTRACT.md).
+  train_file: data/processed/expert-v1/train.jsonl
+  val_file: data/processed/expert-v1/val.jsonl
+  max_seq_length: 2048
+  packing: false
+
+train:
+  output_dir: outputs/sft/qwen3-8b-qlora
+  num_train_epochs: 2
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-4
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  bf16: true
+  gradient_checkpointing: true
+  logging_steps: 20
+  eval_strategy: steps
+  eval_steps: 200
+  save_steps: 200
+  save_total_limit: 3
+  report_to: none
+  # TRL / SFTTrainer:
+  assistant_only_loss: true
+  completion_only_loss: true
+
+eval_after_train:
+  protocol: docs/EVAL_PROTOCOL.md
+  fixture: ladder-4p
+  games: 200
+  seed_start: 100000
+  vps_to_win: 10
+
+hardware_budget:
+  device: cuda:0
+  target_peak_vram_gb: 14
+  abort_if_oom: true
