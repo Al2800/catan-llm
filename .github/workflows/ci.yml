@@ -26,7 +26,9 @@ jobs:
           source .venv/bin/activate
           uv pip install -e ".[dev]"
           # Tokenizer/model stack for assistant-mask smoke (SmolLM — not 8B).
-          uv pip install "torch" "transformers" --index-url https://download.pytorch.org/whl/cpu
+          # torch from the CPU wheel index; transformers must come from PyPI.
+          uv pip install "torch" --index-url https://download.pytorch.org/whl/cpu
+          uv pip install "transformers"
 
       - name: Ruff
         run: |
