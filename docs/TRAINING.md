@@ -73,17 +73,22 @@ Outputs under `outputs/sft/qwen3.5-9b-qlora/`:
 
 ```bash
 # From a machine with `hf` CLI + HF_TOKEN
+# Prefer insured chunks (Hub upload every save_steps) over one 24h-timeout run.
 hf jobs run \
   --flavor l40sx1 \
-  --timeout 24h \
+  --timeout 12h \
+  --ssh \
   --detach \
   --secrets HF_TOKEN \
-  --name catan-ticket17-sft-2k \
+  --name catan-ticket17-sft-chunk800 \
   -e BRANCH=main \
   pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime \
   bash -c 'set -euo pipefail; apt-get update -qq && apt-get install -y -qq git >/dev/null; \
     git clone --depth 1 --branch "$BRANCH" https://github.com/Al2800/catan-llm.git /tmp/catan-llm; \
-    bash /tmp/catan-llm/scripts/rental_sft_gate_b_job.sh --max-steps 2000 --skip-gate'
+    bash /tmp/catan-llm/scripts/rental_sft_gate_b_job.sh \
+      --max-steps 800 --skip-gate --skip-eval'
+# Later chunks (same optimizer/step state via Trainer resume):
+#   ... --max-steps 1600 --skip-gate --skip-eval --resume-from-hub checkpoint-800
 ```
 
 Scripts: `scripts/rental_sft_gate_b_job.sh`, `scripts/rental_sft_gate_b.py`  

@@ -108,6 +108,11 @@ def main() -> int:
     ap.add_argument("--max-samples", type=int, default=None)
     ap.add_argument("--skip-train", action="store_true")
     ap.add_argument("--skip-gate", action="store_true")
+    ap.add_argument(
+        "--skip-eval",
+        action="store_true",
+        help="Skip mid-train val eval (faster chunks; Hub checkpoints still upload)",
+    )
     ap.add_argument("--gate-games", type=int, default=200)
     ap.add_argument(
         "--adapter",
@@ -175,7 +180,7 @@ def main() -> int:
             train_report = run_qlora_sft(
                 REPO_ROOT / "configs" / "qwen3.5-9b-qlora.yaml",
                 train_file=DATA_DIR / "train.jsonl",
-                val_file=DATA_DIR / "val.jsonl",
+                val_file=None if args.skip_eval else (DATA_DIR / "val.jsonl"),
                 output_dir=OUT_DIR,
                 max_steps=args.max_steps,
                 max_samples=args.max_samples,
