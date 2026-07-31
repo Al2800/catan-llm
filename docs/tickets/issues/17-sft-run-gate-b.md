@@ -4,11 +4,13 @@
 Promote only if Gate B passes (legality floors + candidate win share >
 WeightedRandom in the same fixture).
 
-**Blocked by:** 15, 16
+**Blocked by:** 15, 16 (done)
 
-**Status:** blocked
+**Status:** ready-for-agent
 
 **Phase:** 2
+
+**Train entrypoint:** `catan-qlora-train` ([ticket 15](15-qlora-training-pipeline.md)) on rental ≥24GB.
 
 - [ ] Fixture identity recorded before eval
 - [ ] `parse_rate_model` / `legality_rate_model` ≥ 0.995
