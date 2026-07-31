@@ -6,7 +6,7 @@ oversample, game_key splits, and complete manifests.
 
 **Blocked by:** 05, 10, 11
 
-**Status:** blocked
+**Status:** ready-for-agent
 
 **Phase:** 1
 

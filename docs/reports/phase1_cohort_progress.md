@@ -23,15 +23,20 @@
 
 Default generator target is **112k** filtered so the 90% train split clears 100k.
 
-## Ticket 13 — eval holdout (handed off to Mac)
+## Ticket 13 — eval holdout ✅
 
 | Item | Value |
 |---|---|
 | Seed range | `eval_holdout` `[100000, 105000)` |
-| Target | 5,000 games |
-| Cloud status | **stopped** at ~1,725/5,000 — partial abandoned |
-| Next | Fresh burn on Mac — see [`MAC_HANDOFF_PHASE1.md`](MAC_HANDOFF_PHASE1.md) |
-| Artifact (when done) | `data/phase1/processed/eval-holdout-v1/` (`immutable: true`) |
+| Games | **5,000** (fresh Mac burn; cloud partial abandoned) |
+| Filtered decisions | **1,316,632** |
+| Workers | 8 |
+| Runtime | ~35 min (2026-07-31T10:21Z → 10:56Z) |
+| Artifact | `data/phase1/processed/eval-holdout-v1/` |
+| Manifest | `immutable: true`, `role: eval_holdout` |
+| Cohort report | `data/phase1/holdout_cohort_report.json` |
+| Seed overlap with `train_main` | **0** |
+| holdout.jsonl sha256 | `5809a9fc1ed42b2fda29abdd77e37980f895ab52e7c5787023fce2fc7ccd1bfc` |
 
 ## Ticket 09 smoke recap
 
