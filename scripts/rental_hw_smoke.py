@@ -244,6 +244,20 @@ def _micro_train(tokenizer, model, train_jsonl: Path, steps: int = MICRO_STEPS) 
     }
 
 
+def _prepare_for_inference(model) -> None:
+    """Disable train-only knobs so generate() can use KV cache."""
+    model.eval()
+    if hasattr(model, "gradient_checkpointing_disable"):
+        model.gradient_checkpointing_disable()
+    # PEFT wraps the base model — clear checkpointing there too.
+    base = getattr(model, "get_base_model", lambda: None)()
+    if base is not None and hasattr(base, "gradient_checkpointing_disable"):
+        base.gradient_checkpointing_disable()
+    for cfg in (getattr(model, "config", None), getattr(base, "config", None) if base else None):
+        if cfg is not None:
+            cfg.use_cache = True
+
+
 def _complete_fn_from_peft(base_model, tokenizer, max_new_tokens: int = 96):
     device = next(base_model.parameters()).device
 
@@ -256,11 +270,17 @@ def _complete_fn_from_peft(base_model, tokenizer, max_new_tokens: int = 96):
             messages, tokenize=False, add_generation_prompt=True
         )
         inputs = tokenizer(prompt, return_tensors="pt").to(device)
-        with torch.no_grad():
+        # Cap prompt length for smoke latency; labels already validated at 4096.
+        if inputs["input_ids"].shape[-1] > 2048:
+            inputs["input_ids"] = inputs["input_ids"][:, -2048:]
+            if "attention_mask" in inputs:
+                inputs["attention_mask"] = inputs["attention_mask"][:, -2048:]
+        with torch.inference_mode():
             out = base_model.generate(
                 **inputs,
                 max_new_tokens=max_new_tokens,
                 do_sample=False,
+                use_cache=True,
                 pad_token_id=tokenizer.pad_token_id,
             )
         gen = out[0, inputs["input_ids"].shape[-1] :]
@@ -270,6 +290,7 @@ def _complete_fn_from_peft(base_model, tokenizer, max_new_tokens: int = 96):
 
 
 def _one_game(model, tokenizer, seed: int = 1007) -> dict:
+    _prepare_for_inference(model)
     complete = _complete_fn_from_peft(model, tokenizer)
     llm = LLMPlayer(Color.RED, complete_fn=complete, model=MODEL_ID)
     seats = [
