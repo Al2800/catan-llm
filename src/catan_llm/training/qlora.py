@@ -365,6 +365,8 @@ def run_qlora_sft(
     torch.cuda.reset_peak_memory_stats()
     t0 = time.time()
 
+    import inspect
+
     sft_kwargs: dict[str, Any] = {
         "output_dir": str(out_dir),
         "per_device_train_batch_size": int(
@@ -376,6 +378,7 @@ def run_qlora_sft(
         "learning_rate": float(train_cfg.get("learning_rate", 1e-4)),
         "lr_scheduler_type": str(train_cfg.get("lr_scheduler_type", "cosine")),
         "warmup_ratio": float(train_cfg.get("warmup_ratio", 0.03)),
+        "warmup_steps": int(train_cfg.get("warmup_steps", 0) or 0),
         "weight_decay": float(train_cfg.get("weight_decay", 0.0)),
         "max_grad_norm": float(train_cfg.get("max_grad_norm", 1.0)),
         "bf16": bool(train_cfg.get("bf16", True)),
@@ -401,7 +404,18 @@ def run_qlora_sft(
     else:
         sft_kwargs["eval_strategy"] = "no"
 
-    args = SFTConfig(**sft_kwargs)
+    # TRL/transformers versions differ on TrainingArguments field names.
+    allowed = set(inspect.signature(SFTConfig.__init__).parameters)
+    # Prefer ratio when supported; else approximate with warmup_steps if max_steps known.
+    if "warmup_ratio" not in allowed and "warmup_steps" in allowed:
+        sft_kwargs.pop("warmup_ratio", None)
+        if not sft_kwargs.get("warmup_steps") and max_steps:
+            sft_kwargs["warmup_steps"] = max(1, int(0.03 * int(max_steps)))
+    filtered = {k: v for k, v in sft_kwargs.items() if k in allowed}
+    dropped = sorted(set(sft_kwargs) - set(filtered))
+    if dropped:
+        print(f"SFTConfig dropping unsupported kwargs: {dropped}", flush=True)
+    args = SFTConfig(**filtered)
     trainer = SFTTrainer(
         model=model,
         args=args,
