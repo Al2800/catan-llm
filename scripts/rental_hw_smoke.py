@@ -131,14 +131,21 @@ def _build_qlora(revision: str, cfg: dict):
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_ID,
+    load_kwargs = dict(
         revision=revision,
         trust_remote_code=True,
         quantization_config=bnb,
         device_map="auto",
         torch_dtype=torch.bfloat16,
     )
+    try:
+        model = AutoModelForCausalLM.from_pretrained(MODEL_ID, **load_kwargs)
+    except (ValueError, OSError, KeyError) as exc:
+        # Qwen3.5 ships as a multimodal ConditionalGeneration checkpoint.
+        print(f"AutoModelForCausalLM failed ({exc}); trying AutoModel", flush=True)
+        from transformers import AutoModel
+
+        model = AutoModel.from_pretrained(MODEL_ID, **load_kwargs)
     model = prepare_model_for_kbit_training(model)
     model = get_peft_model(
         model,
