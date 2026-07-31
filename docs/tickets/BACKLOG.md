@@ -33,7 +33,7 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | [14](issues/14-dataset-quality-signoff.md) | Dataset quality report + Phase-1 sign-off | 1 | done | 12, 13 (done) |
 | [15](issues/15-qlora-training-pipeline.md) | Production QLoRA training pipeline | 2 | done | 09, 14 (done) |
 | [16](issues/16-serving-constrained-decoding.md) | Serving + constrained decoding path | 2 | done | 09 |
-| [17](issues/17-sft-run-gate-b.md) | SFT run + Gate B ladder eval | 2 | ready-for-agent | 15, 16 (done) |
+| [17](issues/17-sft-run-gate-b.md) | SFT run + Gate B ladder eval | 2 | claimed | 15, 16 (done) |
 | [18](issues/18-failure-taxonomy-v1.md) | Failure taxonomy v1 | 2 | blocked | 17 |
 | [19](issues/19-fill-rl-spec.md) | Fill RL_SPEC (reward / anti-hack / cost) | 3 | blocked | 17 |
 | [20](issues/20-grpo-loop.md) | GRPO training loop implementation | 3 | blocked | 19 |
@@ -45,7 +45,7 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 
 ## Frontier right now (can start)
 
-- **17** — Full SFT run + Gate B ladder eval on rental GPU (`catan-qlora-train`)
+- **17** claimed — rental QLoRA SFT + `catan-gate-b` ladder-4p (`scripts/rental_sft_gate_b.py`)
 - Prefer Mac/local CPU for long data burns; QLoRA train stays on rental (≥24GB)
 - Upload Mac holdout to HF before Gate B (see phase1 quality sign-off follow-ups)
 

@@ -6,11 +6,12 @@ WeightedRandom in the same fixture).
 
 **Blocked by:** 15, 16 (done)
 
-**Status:** ready-for-agent
+**Status:** claimed
 
 **Phase:** 2
 
-**Train entrypoint:** `catan-qlora-train` ([ticket 15](15-qlora-training-pipeline.md)) on rental ≥24GB.
+**Train entrypoint:** `catan-qlora-train` / `scripts/rental_sft_gate_b.py` ([ticket 15](15-qlora-training-pipeline.md)) on rental ≥24GB.  
+**Gate B CLI:** `catan-gate-b --adapter … --fixture ladder-4p --games 200`
 
 - [ ] Fixture identity recorded before eval
 - [ ] `parse_rate_model` / `legality_rate_model` ≥ 0.995

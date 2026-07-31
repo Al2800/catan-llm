@@ -44,6 +44,7 @@ catan-sft-smoke = "catan_llm.scripts.sft_smoke:main"
 catan-build-dataset = "catan_llm.scripts.build_dataset:main"
 catan-phase1-cohort = "catan_llm.scripts.run_phase1_cohort:main"
 catan-qlora-train = "catan_llm.scripts.run_qlora_sft:main"
+catan-gate-b = "catan_llm.scripts.run_gate_b:main"
 catan-serve = "catan_llm.scripts.serve_local:main"
 catan-play-endpoint = "catan_llm.scripts.play_endpoint:main"
 
