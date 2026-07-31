@@ -42,6 +42,7 @@ catan-generate = "catan_llm.scripts.generate_trajectories:main"
 catan-arena = "catan_llm.scripts.run_arena:main"
 catan-sft-smoke = "catan_llm.scripts.sft_smoke:main"
 catan-build-dataset = "catan_llm.scripts.build_dataset:main"
+catan-phase1-cohort = "catan_llm.scripts.run_phase1_cohort:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

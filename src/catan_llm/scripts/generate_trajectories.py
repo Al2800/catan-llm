@@ -11,7 +11,7 @@ from catan_llm.sim.adapter import generate_trajectories
 
 
 @click.command()
-@click.option("--games", default=10, show_default=True, help="Number of games")
+@click.option("--games", default=10, show_default=True, help="Number of games (upper bound)")
 @click.option(
     "--seed",
     default=None,
@@ -29,13 +29,25 @@ from catan_llm.sim.adapter import generate_trajectories
 )
 @click.option(
     "--bots",
-    default="random,weightedrandom,valuefunction,alphabeta",
+    default="alphabeta,valuefunction,weightedrandom,random",
     show_default=True,
-    help="Comma-separated bot seats",
+    help="Comma-separated bot seats (SCOPE §5.2 ladder order)",
 )
 @click.option("--map-type", default="BASE", show_default=True)
 @click.option("--vps", default=10, show_default=True, type=int)
 @click.option("--workers", default=1, show_default=True, type=int)
+@click.option(
+    "--target-decisions",
+    default=None,
+    type=int,
+    help="Stop once filtered (action_index>=0) decisions reach this count.",
+)
+@click.option(
+    "--rotate-seats/--no-rotate-seats",
+    default=False,
+    show_default=True,
+    help="Rotate bot seats by seed (SCOPE §5.2 train_main).",
+)
 @click.option(
     "--out",
     "out_path",
@@ -55,7 +67,20 @@ from catan_llm.sim.adapter import generate_trajectories
     default=False,
     help="Wipe existing jsonl + journal before writing (explicit; never done implicitly).",
 )
-def main(games, seed, seed_range_name, bots, map_type, vps, workers, out_path, resume, overwrite):
+def main(
+    games,
+    seed,
+    seed_range_name,
+    bots,
+    map_type,
+    vps,
+    workers,
+    target_decisions,
+    rotate_seats,
+    out_path,
+    resume,
+    overwrite,
+):
     bot_names = [b.strip() for b in bots.split(",") if b.strip()]
     summary = generate_trajectories(
         bot_names=bot_names,
@@ -68,6 +93,8 @@ def main(games, seed, seed_range_name, bots, map_type, vps, workers, out_path, r
         workers=workers,
         resume=resume,
         overwrite=overwrite,
+        target_decisions=target_decisions,
+        rotate_seats=rotate_seats,
     )
     click.echo(json.dumps(summary, indent=2))
 

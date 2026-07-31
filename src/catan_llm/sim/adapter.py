@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import random
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
@@ -136,6 +137,37 @@ def _expected_game_key(bot_names: list[str], seed: int, map_type: str) -> str:
     return make_game_key(seed, hash_catan_map(catan_map), cfg_hash)
 
 
+def rotate_bot_names(bot_names: list[str], seed: int) -> list[str]:
+    """Deterministic seat rotation for SCOPE §5.2 cohort mixes."""
+    if not bot_names:
+        return bot_names
+    k = seed % len(bot_names)
+    if k == 0:
+        return list(bot_names)
+    return list(bot_names[k:] + bot_names[:k])
+
+
+def count_filtered_decisions(path: Path) -> int:
+    """Count schema rows with ``action_index >= 0`` in a trajectory JSONL."""
+    path = Path(path)
+    if not path.exists() or path.stat().st_size == 0:
+        return 0
+    n = 0
+    with path.open(encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            if int(row.get("action_index", -1)) >= 0:
+                n += 1
+    return n
+
+
+def _filtered_in_records(records: list[DecisionRecord]) -> int:
+    return sum(1 for r in records if r.action_index >= 0)
+
+
 def generate_trajectories(
     *,
     bot_names: list[str],
@@ -149,6 +181,8 @@ def generate_trajectories(
     resume: bool = True,
     overwrite: bool = False,
     seed_range_name: str | None = None,
+    target_decisions: int | None = None,
+    rotate_seats: bool = False,
 ) -> dict:
     """Generate decision trajectories with append-only JSONL + game_key journal.
 
@@ -159,8 +193,8 @@ def generate_trajectories(
       ``overwrite=True`` (explicit wipe of jsonl + journal).
 
     Seed ranges: pass ``seed_range_name`` from ``docs/SEED_REGISTRY.md``.
-    Cohort stop (SCOPE §5.2): do not blindly burn full reserved counts — stop when
-    filtered decision targets are met.
+    Cohort stop (SCOPE §5.2): when ``target_decisions`` is set, stop once filtered
+    (``action_index >= 0``) decisions reach that count — including prior resume rows.
     """
     seed, num_games, seed_range = resolve_generation_seeds(
         num_games=num_games, seed=seed, seed_range_name=seed_range_name
@@ -195,22 +229,26 @@ def generate_trajectories(
         )
 
     completed = load_completed_game_keys(journal_path) if resume else set()
+    prior_filtered = count_filtered_decisions(out_path) if resume else 0
 
     seeds = [seed + i for i in range(num_games)]
-    planned: list[tuple[int, str]] = []
+    planned: list[tuple[int, str, list[str]]] = []
     skipped = 0
     for s in seeds:
-        gkey = _expected_game_key(bot_names, s, map_type)
+        seats = rotate_bot_names(bot_names, s) if rotate_seats else list(bot_names)
+        gkey = _expected_game_key(seats, s, map_type)
         if gkey in completed:
             skipped += 1
         else:
-            planned.append((s, gkey))
+            planned.append((s, gkey, seats))
 
     total_decisions = 0
+    filtered_decisions = prior_filtered
     finished_games = 0
     winners: dict[str, int] = {}
     buffer: list[DecisionRecord] = []
     pending_journal: list[tuple[str, int]] = []
+    stopped_early = False
 
     def flush():
         nonlocal buffer, pending_journal
@@ -221,77 +259,92 @@ def generate_trajectories(
             append_journal(journal_path, game_key=gkey, seed=s)
         pending_journal = []
 
-    def handle_result(result: GameResult):
-        nonlocal total_decisions, finished_games, buffer, pending_journal
+    def handle_result(result: GameResult) -> None:
+        nonlocal total_decisions, filtered_decisions, finished_games, buffer, pending_journal
         buffer.extend(result.records)
         pending_journal.append((result.game_key, result.seed))
         total_decisions += result.num_decisions
+        filtered_decisions += _filtered_in_records(result.records)
         finished_games += 1
         if result.winner:
             winners[result.winner] = winners.get(result.winner, 0) + 1
         if finished_games % chunk_flush == 0:
             flush()
 
-    empty_summary = {
-        "num_games": 0,
-        "num_decisions": 0,
-        "skipped_games": skipped,
-        "winners": winners,
-        "out_path": str(out_path),
-        "journal_path": str(journal_path),
-        "seeds": seeds,
-        "bot_names": bot_names,
-        "map_type": map_type.upper(),
-        "base_seed": seed,
-        "seed_range": seed_range_meta,
-        "resume": resume,
-        "catanatron_commit": CATANATRON_COMMIT,
-        "source_commit": resolve_source_commit(),
-        "cohort_note": (
-            "SCOPE §5.2: stop at filtered decision targets; "
-            "do not blindly burn full reserved seed counts."
-        ),
-    }
+    def hit_target() -> bool:
+        return target_decisions is not None and filtered_decisions >= target_decisions
+
+    def summary(*, early: bool) -> dict:
+        return {
+            "num_games": finished_games,
+            "num_decisions": total_decisions,
+            "num_filtered_decisions": filtered_decisions,
+            "prior_filtered_decisions": prior_filtered,
+            "target_decisions": target_decisions,
+            "stopped_early": early,
+            "skipped_games": skipped,
+            "winners": winners,
+            "out_path": str(out_path),
+            "journal_path": str(journal_path),
+            "seeds": seeds,
+            "bot_names": bot_names,
+            "rotate_seats": rotate_seats,
+            "map_type": map_type.upper(),
+            "base_seed": seed,
+            "seed_range": seed_range_meta,
+            "resume": resume,
+            "catanatron_commit": CATANATRON_COMMIT,
+            "source_commit": resolve_source_commit(),
+            "cohort_note": (
+                "SCOPE §5.2: stop at filtered decision targets; "
+                "do not blindly burn full reserved seed counts."
+            ),
+        }
+
+    if hit_target():
+        if not out_path.exists():
+            write_jsonl(out_path, [])
+        return summary(early=True)
+
     if not planned:
         if not out_path.exists():
             write_jsonl(out_path, [])
-        return empty_summary
+        return summary(early=False)
 
     if workers <= 1:
-        for s, _gkey in tqdm(planned, total=len(planned), desc="games"):
-            result = play_one(bot_names, s, map_type=map_type, vps_to_win=vps_to_win)
+        for s, _gkey, seats in tqdm(planned, total=len(planned), desc="games"):
+            result = play_one(seats, s, map_type=map_type, vps_to_win=vps_to_win)
             handle_result(result)
+            if hit_target():
+                stopped_early = True
+                break
     else:
-        jobs = [(bot_names, s, map_type, vps_to_win) for s, _ in planned]
+        # Batch so target_decisions can stop without scheduling the whole range.
+        batch_size = max(workers * 2, 8)
+        idx = 0
         with ProcessPoolExecutor(max_workers=workers) as pool:
-            futures = [pool.submit(_play_one_job, job) for job in jobs]
-            for fut in tqdm(as_completed(futures), total=len(planned), desc="games"):
-                handle_result(fut.result())
+            pbar = tqdm(total=len(planned), desc="games")
+            while idx < len(planned) and not hit_target():
+                batch = planned[idx : idx + batch_size]
+                idx += len(batch)
+                futures = [
+                    pool.submit(_play_one_job, (seats, s, map_type, vps_to_win))
+                    for s, _gkey, seats in batch
+                ]
+                # Always drain the batch so completed games are recorded.
+                for fut in as_completed(futures):
+                    handle_result(fut.result())
+                    pbar.update(1)
+                if hit_target():
+                    stopped_early = True
+                    break
+            pbar.close()
 
     flush()
     if not out_path.exists():
         write_jsonl(out_path, [])
 
-    return {
-        "num_games": finished_games,
-        "num_decisions": total_decisions,
-        "skipped_games": skipped,
-        "winners": winners,
-        "out_path": str(out_path),
-        "journal_path": str(journal_path),
-        "seeds": seeds,
-        "bot_names": bot_names,
-        "map_type": map_type.upper(),
-        "base_seed": seed,
-        "seed_range": seed_range_meta,
-        "resume": resume,
-        "catanatron_commit": CATANATRON_COMMIT,
-        "source_commit": resolve_source_commit(),
-        "cohort_note": (
-            "SCOPE §5.2: stop at filtered decision targets; "
-            "do not blindly burn full reserved seed counts."
-        ),
-    }
+    return summary(early=stopped_early)
 
 
 def sample_bot_mix(rng: random.Random | None = None) -> list[str]:

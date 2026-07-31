@@ -100,6 +100,9 @@ class DatasetManifest(BaseModel):
     split_counts: dict[str, int] = Field(default_factory=dict)
     checksums: dict[str, str] = Field(default_factory=dict)
     notes: str = ""
+    # Ticket 13: eval holdout must never enter training.
+    immutable: bool = False
+    role: str | None = None  # e.g. "train", "eval_holdout"
 
 
 def require_schema_v2(records: list[DecisionRecord], *, context: str = "dataset") -> None:

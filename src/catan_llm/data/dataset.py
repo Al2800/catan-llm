@@ -109,19 +109,28 @@ def build_chat_dataset(
     include_rationale: bool = True,
     require_v2: bool = True,
     seed_range: dict | None = None,
+    immutable: bool = False,
+    role: str | None = None,
+    notes: str | None = None,
+    split: bool = True,
 ) -> DatasetManifest:
     records = read_jsonl(Path(trajectory_path))
     if require_v2:
         require_schema_v2(records, context="build_chat_dataset")
     # Drop decisions where action wasn't in the listed legal set.
     records = [r for r in records if r.action_index >= 0]
-    splits = split_by_game_key(records)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    if split:
+        split_map = split_by_game_key(records)
+    else:
+        # Holdout / single-artifact mode (ticket 13).
+        split_map = {"holdout": records}
+
     checksums: dict[str, str] = {}
     split_counts: dict[str, int] = {}
-    for split_name, rows in splits.items():
+    for split_name, rows in split_map.items():
         path = out_dir / f"{split_name}.jsonl"
         with path.open("w", encoding="utf-8") as fh:
             for record in rows:
@@ -134,6 +143,12 @@ def build_chat_dataset(
     seeds = sorted({r.seed for r in records})
     bot_config = records[0].bot_config if records else []
     map_type = records[0].map_type if records else "BASE"
+    default_notes = "schema v2; splits by game_key; prompts from live renderer"
+    if immutable:
+        default_notes = (
+            "IMMUTABLE eval holdout — never train on this artifact; "
+            "schema v2; prompts from live renderer"
+        )
     manifest = DatasetManifest(
         name=name,
         version=version,
@@ -152,7 +167,9 @@ def build_chat_dataset(
         num_decisions=len(records),
         split_counts=split_counts,
         checksums=checksums,
-        notes="schema v2; splits by game_key; prompts from live renderer",
+        notes=notes or default_notes,
+        immutable=immutable,
+        role=role or ("eval_holdout" if immutable else "train"),
     )
     (out_dir / "manifest.json").write_text(
         manifest.model_dump_json(indent=2), encoding="utf-8"
