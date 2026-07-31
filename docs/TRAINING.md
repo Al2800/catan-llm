@@ -91,6 +91,22 @@ Scripts: `scripts/rental_sft_gate_b_job.sh`, `scripts/rental_sft_gate_b.py`
 
 Artifacts upload (when token present) to **`AlCampbell/catan-llm-sft-v1`**.
 
+### Mid-run checkpoint insurance
+
+Each `save_steps` checkpoint is also uploaded to
+`hf://AlCampbell/catan-llm-sft-v1/checkpoints/checkpoint-<step>/` when `HF_TOKEN`
+is set (config `train.hub_checkpoint_repo`; disable with
+`CATAN_HUB_CHECKPOINT_REPO=`). Resume on a later job:
+
+```bash
+bash scripts/rental_sft_gate_b_job.sh \
+  --max-steps 2000 --skip-gate \
+  --resume-from-hub checkpoint-400
+```
+
+Note: live `hf jobs ssh` upload only works if the Job was started with `--ssh`.
+The in-trainer Hub callback does **not** need SSH.
+
 ## Gate B after train
 
 ```bash

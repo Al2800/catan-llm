@@ -461,6 +461,18 @@ def run_qlora_sft(
         processing_class=tokenizer,
     )
 
+    from catan_llm.training.hub_checkpoints import (
+        HubCheckpointUploadCallback,
+        resolve_hub_checkpoint_repo,
+    )
+
+    hub_repo = resolve_hub_checkpoint_repo(train_cfg.get("hub_checkpoint_repo"))
+    hub_cb = None
+    if hub_repo:
+        hub_cb = HubCheckpointUploadCallback(hub_repo)
+        trainer.add_callback(hub_cb.as_trainer_callback())
+        print(f"hub-checkpoint: will upload saves → hf://{hub_repo}/checkpoints/", flush=True)
+
     train_result = trainer.train(
         resume_from_checkpoint=str(resume_from) if resume_from else None
     )
@@ -470,6 +482,8 @@ def run_qlora_sft(
 
     runtime = round(time.time() - t0, 2)
     metrics = dict(getattr(train_result, "metrics", {}) or {})
+    if hub_cb is not None:
+        metrics["hub_checkpoint_uploads"] = list(hub_cb.uploaded)
     # Prefer trainer-reported step time; else derive from runtime / steps.
     step_time = metrics.get("train_steps_per_second")
     derived_step = None
