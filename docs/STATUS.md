@@ -43,9 +43,9 @@ Full vision, risks, and locked decisions: [`SCOPE.md`](SCOPE.md).
 
 ## In flight
 
-- **Ticket 17:** finish meaningful SFT → Gate B (200 games) → publish arena JSON.
-- **Ops:** upload Mac `eval-holdout-v1` to HF before holdout-based evals.
-- **Docs/PR:** land current branch work onto `main` (owner prefers `main`).
+- **Ticket 17:** 2000-step L40S SFT → then Gate B (200 games) → publish arena JSON.
+- **Ticket 18 tooling:** `catan-taxonomy` ready; fill report when Gate B JSON exists.
+- **Ops:** upload Mac `eval-holdout-v1` via `scripts/upload_holdout_hf.py`.
 
 ## Next (after 17)
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import urllib.error
 import urllib.request
+from collections import Counter
 from typing import Any, Callable
 
 from catanatron.models.enums import ActionType
@@ -46,6 +47,8 @@ class LLMPlayer(Player):
         self._legal_ok = 0
         self._legal_total = 0
         self._fallback_count = 0
+        self._error_hist: Counter[str] = Counter()
+        self._phase_error_hist: Counter[str] = Counter()
         self.last_raw: str = ""
         self.last_error: str | None = None
         self.fallback_policy = FALLBACK_POLICY
@@ -55,21 +58,39 @@ class LLMPlayer(Player):
         self._parse_ok = self._parse_total = 0
         self._legal_ok = self._legal_total = 0
         self._fallback_count = 0
+        self._error_hist = Counter()
+        self._phase_error_hist = Counter()
         self.last_raw = ""
         self.last_error = None
 
-    def consume_eval_counters(self) -> dict[str, int]:
-        vals = {
+    def consume_eval_counters(self) -> dict[str, Any]:
+        vals: dict[str, Any] = {
             "parse_ok": self._parse_ok,
             "parse_total": self._parse_total,
             "legal_ok": self._legal_ok,
             "legal_total": self._legal_total,
             "fallback_count": self._fallback_count,
+            "action_error_hist": dict(self._error_hist),
+            "phase_error_hist": dict(self._phase_error_hist),
         }
         self._parse_ok = self._parse_total = 0
         self._legal_ok = self._legal_total = 0
         self._fallback_count = 0
+        self._error_hist = Counter()
+        self._phase_error_hist = Counter()
         return vals
+
+    def _record_failure(self, error: str | None, playable_actions) -> None:
+        key = error or "unknown"
+        self._error_hist[key] += 1
+        # Bucket by dominant legal action type at the decision (context cue).
+        if playable_actions:
+            types = [
+                a.action_type.value if hasattr(a.action_type, "value") else str(a.action_type)
+                for a in playable_actions
+            ]
+            dominant = Counter(types).most_common(1)[0][0]
+            self._phase_error_hist[f"{dominant}:{key}"] += 1
 
     def decide(self, game, playable_actions):
         playable_actions = list(playable_actions)
@@ -92,6 +113,7 @@ class LLMPlayer(Player):
             self._parse_total += 1
             self._legal_total += 1
             self._fallback_count += 1
+            self._record_failure("request_failed", playable_actions)
             return fallback_action(playable_actions)
 
         result = parse_action_response(raw, playable_actions)
@@ -104,6 +126,7 @@ class LLMPlayer(Player):
 
         self.last_error = result.error
         self._fallback_count += 1
+        self._record_failure(result.error, playable_actions)
         return fallback_action(playable_actions)
 
     def _complete(self, system: str, user: str) -> str:

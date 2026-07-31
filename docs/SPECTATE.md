@@ -32,6 +32,13 @@ Bot-only dry run (no server):
 catan-spectate --bots-only --watch --seed 7 --vps 6
 ```
 
+In-process PEFT adapter (rental GPU; no HTTP server):
+
+```bash
+# after downloading adapter from AlCampbell/catan-llm-sft-v1 or local train out
+catan-spectate --adapter outputs/sft/qwen3.5-9b-qlora/adapter --watch --vps 8
+```
+
 Replay artifact: `outputs/spectate/replay.json` (turn, seat, action, VPs, timing).
 
 ## Catanatron web UI (full board)

@@ -123,7 +123,14 @@ Uses SmolLM — proves package wiring only.
 | ~2k steps | Format/legality much better; skill still weak vs WR |
 | ≥1 epoch + tune | Plausible Gate B contention if data quality holds |
 
+## After Gate B
+
+```bash
+catan-taxonomy --report outputs/arena/gate_b_ladder4p.json
+# → docs/reports/failure_taxonomy_v1.md  (ticket 18)
+```
+
 ## Related
 
-- Ticket **15** (pipeline), **17** (SFT + Gate B), **09** (HW smoke)
+- Ticket **15** (pipeline), **17** (SFT + Gate B), **09** (HW smoke), **18** (taxonomy)
 - Dataset sign-off: [`reports/phase1_quality_signoff.md`](reports/phase1_quality_signoff.md)
