@@ -299,10 +299,16 @@ def _one_game(model, tokenizer, seed: int = 1007) -> dict:
         SeatSpec(name="random2", kind="random", player=RandomPlayer(Color.ORANGE)),
         SeatSpec(name="random3", kind="random", player=RandomPlayer(Color.WHITE)),
     ]
-    stats = run_match(seats, num_games=1, seed=seed, vps_to_win=8)
-    summary = stats.summary()
-    summary["llm_parse_stats"] = llm.pop_stats()
-    return summary
+    stats = run_match(
+        seats,
+        num_games=1,
+        seed=seed,
+        vps_to_win=8,
+        candidate_name="llm",
+        versus_name="random",
+    )
+    # Parse/fallback rates are absorbed into MatchStats via consume_eval_counters.
+    return stats.summary(candidate="llm", versus="random")
 
 
 def main() -> int:
