@@ -173,7 +173,7 @@ def main() -> int:
                     )
 
             write()
-            if stage and stage not in {"RUNNING", "UPDATING", "STARTING", "SCHEDULED"}:
+            if stage and stage not in {"RUNNING", "UPDATING", "STARTING", "SCHEDULED", "SCHEDULING"}:
                 status["events"].append({"at": _utc(), "event": "terminal", "stage": stage})
                 write()
                 return 0
