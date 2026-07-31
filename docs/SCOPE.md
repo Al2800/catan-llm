@@ -2,19 +2,23 @@
 
 **Working title:** Catan LLM (training an 8–12B parameter language model to play Settlers of Catan in the Catanatron simulator)
 
-**Status:** Scope locked (see §12). Phase 0 plumbing spike landed in-repo; plan tightened after post-spike review (2026-07-30). Canonical docs now live in this `catan-llm` repository.
+**Status:** Scope locked (see §12). **Execution status:** Phase 2 active — see [`STATUS.md`](STATUS.md).  
+Plan tightened after post-spike review (2026-07-30); Phase 0.5 + Phase 1 exited 2026-07-31.
 
 **Companion specs (normative for implementation — docs win over code until both update together):**
 
+- [`STATUS.md`](STATUS.md) — **where we are / done / next**
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — system + module architecture (as implemented)
 - [`DATA_CONTRACT.md`](DATA_CONTRACT.md) — trajectory **schema v2**, renderer parity, splits, manifests
 - [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md) — fixed fixtures, metrics, promotion gates
+- [`TRAINING.md`](TRAINING.md) / [`SERVING.md`](SERVING.md) / [`SPECTATE.md`](SPECTATE.md) — ops how-tos
 - [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md) — local 5060 Ti / PyTorch / vLLM pin plan
 - [`SEED_REGISTRY.md`](SEED_REGISTRY.md) — disjoint seed ranges (train/val/test/holdout/champion)
 - [`RL_SPEC.md`](RL_SPEC.md) — Phase-3 reward / anti-hacking skeleton (entry gate)
-- [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md) — assignable Phase 0.5 work units
+- [`PHASE0_5_TASKS.md`](PHASE0_5_TASKS.md) — Phase 0.5 cards (**complete**; historical)
 - [`tickets/BACKLOG.md`](tickets/BACKLOG.md) — full ticket backlog (status of outstanding work)
 - [`../AGENTS.md`](../AGENTS.md) — handoff rules for coding agents
-- [`../configs/qwen3.5-9b-qlora.yaml`](../configs/qwen3.5-9b-qlora.yaml) — Phase-2 QLoRA training sketch
+- [`../configs/qwen3.5-9b-qlora.yaml`](../configs/qwen3.5-9b-qlora.yaml) — Phase-2 QLoRA training config
 
 ---
 

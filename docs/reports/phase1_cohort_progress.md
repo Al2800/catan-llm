@@ -11,7 +11,7 @@
 | Seed range | `train_main` `[0, 50000)` |
 | Bot mix | alphabeta, valuefunction, weightedrandom, random (rotated) |
 | Filtered decisions (raw) | **112,754** |
-| Train / val / test | **101,303** / 5,525 / 5,926 |
+| Train / val / test | **101,303** / 5,458 / 5,993 |
 | Target | ≥100k train-split decisions — **met** |
 | Dataset | `data/phase1/processed/expert-v1/` |
 | Manifest | `data/phase1/processed/expert-v1/manifest.json` |

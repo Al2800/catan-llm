@@ -37,11 +37,12 @@ lora:
 
 data:
   # Must be built from the canonical renderer (docs/DATA_CONTRACT.md v2).
-  train_file: data/processed/expert-v1/train.jsonl
-  val_file: data/processed/expert-v1/val.jsonl
+  # Phase-1 signed-off cohort (ticket 14): local path or HF AlCampbell/catan-llm-phase1.
+  train_file: data/phase1/processed/expert-v1/train.jsonl
+  val_file: data/phase1/processed/expert-v1/val.jsonl
   # Measured canonical prompts are ~2.3–2.5k tokens before the assistant label.
   # 2048 with keep_start truncation would cut the JSON label — do not lower below 4096.
-  # 4096 is a label-safety floor; T8 must prove VRAM on the 5060 Ti with the pinned revision.
+  # 4096 is a label-safety floor; ticket 09 L40S smoke proved VRAM @ 4096.
   max_seq_length: 4096
   packing: false
   require_schema_version: v2

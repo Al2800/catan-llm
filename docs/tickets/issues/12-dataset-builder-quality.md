@@ -6,11 +6,7 @@ oversample, game_key splits, and complete manifests.
 
 **Blocked by:** 05, 10, 11 (done)
 
-<<<<<<< HEAD
 **Status:** done (2026-07-31)
-=======
-**Status:** ready-for-agent
->>>>>>> f5e0a10 (Close ticket 13: fresh 5k-game immutable eval holdout on Mac.)
 
 **Phase:** 1
 

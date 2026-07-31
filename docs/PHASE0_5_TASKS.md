@@ -1,6 +1,9 @@
 # Phase 0.5 task cards
 
-Assignable units before Phase-1 scale.
+> **Historical.** Phase 0.5 exited 2026-07-31. For current work see
+> [`STATUS.md`](STATUS.md) and [`tickets/BACKLOG.md`](tickets/BACKLOG.md).
+
+Assignable units before Phase-1 scale (all complete).
 
 Normative refs: [`DATA_CONTRACT.md`](DATA_CONTRACT.md), [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md),
 [`SEED_REGISTRY.md`](SEED_REGISTRY.md), [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md),

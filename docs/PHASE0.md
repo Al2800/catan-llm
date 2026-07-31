@@ -9,8 +9,11 @@ renderer + action parser, tiny SFT smoke, eval arena v0 (bot-vs-bot), CI.
 
 ## Status
 
+> **Current project status lives in [`STATUS.md`](STATUS.md)** (Phase 2 active).  
+> This file is retained as Phase 0 historical notes.
+
 **Phase 0 plumbing: complete** (spike proves wiring).  
-**Phase 0.5 (contract repair + local 8B proof): next** — required before Phase 1 scale.  
+**Phase 0.5 + Phase 1: complete (2026-07-31).**  
 **Handoff base:** `main` (merged).
 
 Handoff pack:

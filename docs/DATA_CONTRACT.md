@@ -199,9 +199,11 @@ imbalance for trades, public army/road race cues; optional valueΔ if POV-safe
 
 ## 11. Phase-1 exit checklist
 
-- [ ] ≥100k train decisions after filtering (`schema_version=v2`)
-- [ ] Separate ≥5k-game eval holdout from the seed registry
-- [ ] Parity gate green + matching `prompt_version`
-- [ ] No-truncation check green at `max_seq_length=4096`
-- [ ] Manifest complete + checksums
-- [ ] Quality report checked in (`docs/` or `outputs/reports/`)
+Signed off 2026-07-31 — see [`docs/reports/phase1_quality_signoff.md`](reports/phase1_quality_signoff.md).
+
+- [x] ≥100k train decisions after filtering (`schema_version=v2`)
+- [x] Separate ≥5k-game eval holdout from the seed registry
+- [x] Parity gate green + matching `prompt_version`
+- [x] No-truncation check green at `max_seq_length=4096`
+- [x] Manifest complete + checksums
+- [x] Quality report checked in (`docs/` or `outputs/reports/`)

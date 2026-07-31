@@ -28,36 +28,27 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | [09](issues/09-local-8b-qlora-smoke.md) | Qwen3.5-9B QLoRA smoke (rental; local 16GB no-go) | 0.5 | done | — |
 | [10](issues/10-tier-a-rationales.md) | Feature-aware POV-safe Tier A rationales | 1 | done | 04, 07 |
 | [11](issues/11-bulk-trajectory-generation.md) | Bulk trajectory generation (≥100k decisions) | 1 | done | 01–09 (done) |
-<<<<<<< HEAD
 | [12](issues/12-dataset-builder-quality.md) | Dataset builder quality + manifests | 1 | done | 05, 10, 11 |
-| [13](issues/13-eval-holdout.md) | Immutable eval holdout set | 1 | claimed | 01–09 (done) |
-=======
-| [12](issues/12-dataset-builder-quality.md) | Dataset builder quality + manifests | 1 | ready-for-agent | 05, 10, 11 (done) |
 | [13](issues/13-eval-holdout.md) | Immutable eval holdout set | 1 | done | 01–09 (done) |
->>>>>>> f5e0a10 (Close ticket 13: fresh 5k-game immutable eval holdout on Mac.)
-| [14](issues/14-dataset-quality-signoff.md) | Dataset quality report + Phase-1 sign-off | 1 | blocked | 12, 13 |
-| [15](issues/15-qlora-training-pipeline.md) | Production QLoRA training pipeline | 2 | blocked | 09, 14 |
+| [14](issues/14-dataset-quality-signoff.md) | Dataset quality report + Phase-1 sign-off | 1 | done | 12, 13 (done) |
+| [15](issues/15-qlora-training-pipeline.md) | Production QLoRA training pipeline | 2 | done | 09, 14 (done) |
 | [16](issues/16-serving-constrained-decoding.md) | Serving + constrained decoding path | 2 | done | 09 |
-| [17](issues/17-sft-run-gate-b.md) | SFT run + Gate B ladder eval | 2 | blocked | 15, 16 |
+| [17](issues/17-sft-run-gate-b.md) | SFT run + Gate B ladder eval | 2 | claimed | 15, 16 (done) |
 | [18](issues/18-failure-taxonomy-v1.md) | Failure taxonomy v1 | 2 | blocked | 17 |
 | [19](issues/19-fill-rl-spec.md) | Fill RL_SPEC (reward / anti-hack / cost) | 3 | blocked | 17 |
 | [20](issues/20-grpo-loop.md) | GRPO training loop implementation | 3 | blocked | 19 |
 | [21](issues/21-champion-gate-c.md) | RL run + Gate C AlphaBeta champion | 3 | blocked | 20 |
 | [22](issues/22-12b-rental.md) | 12B-class rental run | 4 | blocked | 21 |
 | [23](issues/23-self-play-iteration.md) | Self-play iteration loop | 4 | blocked | 21 |
-| [24](issues/24-live-spectate.md) | Live spectate UX | 4 | blocked | 16 |
+| [24](issues/24-live-spectate.md) | Live spectate UX | 4 | done | 16 (done) |
 | [25](issues/25-blog-writeup.md) | Blog write-up + publishable artifacts | 4 | blocked | 21 |
 
 ## Frontier right now (can start)
 
-<<<<<<< HEAD
-- **13** claimed — finish holdout on Mac ([`MAC_HANDOFF_PHASE1.md`](../reports/MAC_HANDOFF_PHASE1.md))
-- **12** + **16** done on this branch; **14** waits on 13 (+ 12)
-=======
-- **11** + **13** done (train + immutable holdout); next **12** (dataset builder quality)
-- **14** blocked on 12+13 — 13 done, still needs 12
->>>>>>> f5e0a10 (Close ticket 13: fresh 5k-game immutable eval holdout on Mac.)
+- **17** claimed — full rental QLoRA SFT + Gate B 200-game ladder (`scripts/rental_sft_gate_b.py`)
+- **24** done — `catan-spectate --watch` + replay JSON ([`SPECTATE.md`](../SPECTATE.md))
 - Prefer Mac/local CPU for long data burns; QLoRA train stays on rental (≥24GB)
+- Upload Mac holdout to HF before Gate B (see phase1 quality sign-off follow-ups)
 
 ## Already done (not ticketed as open work)
 
