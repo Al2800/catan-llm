@@ -27,7 +27,7 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | [08](issues/08-ci-gate-tests.md) | CI gate tests | 0.5 | done | 02, 04–07 |
 | [09](issues/09-local-8b-qlora-smoke.md) | Qwen3.5-9B QLoRA smoke (rental; local 16GB no-go) | 0.5 | done | — |
 | [10](issues/10-tier-a-rationales.md) | Feature-aware POV-safe Tier A rationales | 1 | done | 04, 07 |
-| [11](issues/11-bulk-trajectory-generation.md) | Bulk trajectory generation (≥100k decisions) | 1 | claimed | 01–09 (done) |
+| [11](issues/11-bulk-trajectory-generation.md) | Bulk trajectory generation (≥100k decisions) | 1 | done | 01–09 (done) |
 | [12](issues/12-dataset-builder-quality.md) | Dataset builder quality + manifests | 1 | blocked | 05, 10, 11 |
 | [13](issues/13-eval-holdout.md) | Immutable eval holdout set | 1 | claimed | 01–09 (done) |
 | [14](issues/14-dataset-quality-signoff.md) | Dataset quality report + Phase-1 sign-off | 1 | blocked | 12, 13 |
@@ -45,8 +45,8 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 
 ## Frontier right now (can start)
 
-- **11** + **13** claimed — cohort runner + stop-at-target landed; bulk/holdout burns in progress
-- **12** blocked on **11** (+ 05, 10); **14** blocked on 12+13
+- **13** claimed — holdout 5k burn in progress; **11** done (101k train-split decisions)
+- **12** ready once **11** merges (05, 10 done); **14** blocked on 12+13
 - Local 5060 Ti remains useful for data gen / arena; QLoRA train stays on rental (≥24GB)
 
 ## Already done (not ticketed as open work)

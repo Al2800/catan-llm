@@ -11,7 +11,9 @@ venv/
 # Data artifacts (generated, not committed)
 data/raw/
 data/processed/
+data/phase1/
 datasets/
+logs/
 *.jsonl
 !data/manifests/*.jsonl
 !docs/samples/*.jsonl
