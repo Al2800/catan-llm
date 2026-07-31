@@ -23,13 +23,14 @@
 
 Default generator target is **112k** filtered so the 90% train split clears 100k.
 
-## Ticket 13 — eval holdout (in progress)
+## Ticket 13 — eval holdout (handed off to Mac)
 
 | Item | Value |
 |---|---|
 | Seed range | `eval_holdout` `[100000, 105000)` |
 | Target | 5,000 games |
-| Status | generating on agent VM |
+| Cloud status | **stopped** at ~1,725/5,000 — partial abandoned |
+| Next | Fresh burn on Mac — see [`MAC_HANDOFF_PHASE1.md`](MAC_HANDOFF_PHASE1.md) |
 | Artifact (when done) | `data/phase1/processed/eval-holdout-v1/` (`immutable: true`) |
 
 ## Ticket 09 smoke recap

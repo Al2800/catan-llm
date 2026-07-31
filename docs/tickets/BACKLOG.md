@@ -45,9 +45,9 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 
 ## Frontier right now (can start)
 
-- **13** claimed — holdout 5k burn in progress; **11** done (101k train-split decisions)
+- **13** claimed — finish holdout on Mac ([`MAC_HANDOFF_PHASE1.md`](../reports/MAC_HANDOFF_PHASE1.md)); **11** done
 - **12** ready once **11** merges (05, 10 done); **14** blocked on 12+13
-- Local 5060 Ti remains useful for data gen / arena; QLoRA train stays on rental (≥24GB)
+- Prefer Mac/local CPU for long data burns; QLoRA train stays on rental (≥24GB)
 
 ## Already done (not ticketed as open work)
 
