@@ -16,6 +16,10 @@
 | Dataset | `data/phase1/processed/expert-v1/` |
 | Manifest | `data/phase1/processed/expert-v1/manifest.json` |
 | Cohort report | `data/phase1/train_cohort_report.json` |
+| Games | 440 |
+| train.jsonl sha256 | `64bdb154ba089b55b761c1c9b07f2a9e015911d1bb105f4b94fc2a1e1573a7f7` |
+| val.jsonl sha256 | `b5480469178ffd967097d580e2f29d067b3740858cda643e52a762a169112290` |
+| test.jsonl sha256 | `b8018068ffe91b6a1daa433ae2862335ddfc3cd00a79111ba7e192a1a19683c0` |
 
 Default generator target is **112k** filtered so the 90% train split clears 100k.
 
