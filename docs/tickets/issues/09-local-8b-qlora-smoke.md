@@ -4,9 +4,9 @@
 pinned revision, peak VRAM log, assistant-mask pass, and one game vs Random —
 **on local 5060 Ti if possible, otherwise on an approved rental GPU**.
 
-**Blocked by:** None for starting. **Blocks Phase 1 scale** until smoke report exists.
+**Blocked by:** None. **Unblocks Phase 1 scale.**
 
-**Status:** claimed — **local no-go**; rental path approved
+**Status:** done — rental go on HF Jobs L40S (2026-07-31)
 
 **Phase:** 0.5 (T8) — owner GPU / rental
 
@@ -16,6 +16,7 @@ pinned revision, peak VRAM log, assistant-mask pass, and one game vs Random —
 |---|---|
 | Hub id | `Qwen/Qwen3.5-9B` |
 | Config | [`configs/qwen3.5-9b-qlora.yaml`](../../../configs/qwen3.5-9b-qlora.yaml) |
+| Revision | `c202236235762e1c871ad0ccb60c8ee5ba337b9a` |
 | Why not Qwen3-8B | `Qwen/Qwen3-8B-Instruct` does not resolve on HF Hub |
 | Why 9B not 8B | Qwen3.5 has no dense 8B |
 
@@ -27,6 +28,13 @@ at label-safe context. Documented in
 
 Do **not** “fix” this by lowering `max_seq_length` below 4096.
 
+## Rental result (2026-07-31)
+
+HF Jobs `l40sx1` (L40S 48GB): **go**. Report:
+[`docs/reports/hw_smoke_rental_l40s.md`](../../reports/hw_smoke_rental_l40s.md).
+
+Entrypoint: `scripts/rental_hw_smoke.py` (+ `scripts/rental_hw_smoke_job.sh`).
+
 ## Acceptance criteria
 
 ### Local path (closed)
@@ -37,11 +45,11 @@ Do **not** “fix” this by lowering `max_seq_length` below 4096.
 
 ### Rental path (required to close ticket)
 
-- [ ] Rental GPU micro-train at ≥4096 with peak VRAM logged
-- [ ] Concrete `model.revision` SHA recorded in `configs/qwen3.5-9b-qlora.yaml`
-- [ ] Assistant-mask check (ticket 07) passes on that pin
-- [ ] One game vs Random completes; parse/fallback logged
-- [ ] `outputs/hw_smoke/report.json` (rental) attached or summarized under `docs/reports/`
+- [x] Rental GPU micro-train at ≥4096 with peak VRAM logged (14.906 GB)
+- [x] Concrete `model.revision` SHA recorded in `configs/qwen3.5-9b-qlora.yaml`
+- [x] Assistant-mask check (ticket 07) passes on that pin
+- [x] One game vs Random completes; parse/fallback logged
+- [x] Rental report under `docs/reports/hw_smoke_rental_l40s.md` (+ Hub dataset artifact)
 
 ## Notes for implementers
 

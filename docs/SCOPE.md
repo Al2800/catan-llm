@@ -427,3 +427,4 @@ Engineering skills are vendored under `.cursor/skills/engineering/`. They are **
 | 2026-07-30 | Phase 0 pack merged to `main`; ticket 00 done; subsequent work stays on `main`. |
 | 2026-07-30 | Base model lock → `Qwen/Qwen3.5-9B` (Qwen3-8B-Instruct no longer resolves; Qwen3.5 has no dense 8B). |
 | 2026-07-31 | Local 5060 Ti 16GB declared no-go for Qwen3.5-9B QLoRA train; ticket 09 exits via rental smoke. |
+| 2026-07-31 | Ticket 09 / T8 **go** on HF Jobs L40S; revision `c202236235762e1c871ad0ccb60c8ee5ba337b9a` pinned; Phase 1 unblocked. |

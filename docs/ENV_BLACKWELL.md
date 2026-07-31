@@ -68,4 +68,8 @@ QLoRA smoke report exists** — local success **or** approved rental fallback wi
 pinned revision.
 
 **2026-07-31 local result:** 5060 Ti 16GB is **no-go** for train smoke. See
-[`reports/hw_smoke_5060ti.md`](reports/hw_smoke_5060ti.md). Close T8 via rental.
+[`reports/hw_smoke_5060ti.md`](reports/hw_smoke_5060ti.md).
+
+**2026-07-31 rental result:** HF Jobs L40S **go** — revision pinned, peak train
+VRAM 14.906 GB @ 4096. See [`reports/hw_smoke_rental_l40s.md`](reports/hw_smoke_rental_l40s.md).
+T8 / ticket 09 closed.

@@ -27,8 +27,8 @@ This matches the risk called out when locking Qwen3.5-9B (multimodal/conversatio
 
 1. **Local 5060 Ti:** keep for data generation, dataset builds, bot arena, CI-adjacent CPU work, and (if it fits) **inference-only** serving experiments.
 2. **Training / ticket 09 exit:** use **rental GPU** for QLoRA micro-smoke + Phase-2 SFT.
-3. Phase-1 ≥100k generation may proceed once the **rental smoke report** pins
-   `model.revision` and proves train+mask+one-game at `max_seq_length≥4096`.
+3. **Closed:** rental smoke **go** on HF Jobs L40S — see
+   [`hw_smoke_rental_l40s.md`](hw_smoke_rental_l40s.md). Phase-1 ≥100k generation unblocked.
 
 ## Rental smoke checklist (replaces local T8 train steps)
 

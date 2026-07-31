@@ -65,8 +65,8 @@ def test_qwen_config_max_seq_length_floor():
     assert qwen_max_seq_length() >= 4096
 
 
-def test_qwen_one_batch_mask_when_revision_pinned():
-    """Full Qwen template + loss check — skipped until ticket 09 pins revision."""
+def test_qwen_tokenizer_mask_when_revision_pinned():
+    """Pinned Qwen chat-template mask check (tokenizer only — CI-safe)."""
     revision = qwen_revision()
     model_name = qwen_model_name()
     if revision is None:
@@ -76,29 +76,52 @@ def test_qwen_one_batch_mask_when_revision_pinned():
         )
 
     transformers = pytest.importorskip("transformers")
+
+    tokenizer = transformers.AutoTokenizer.from_pretrained(
+        model_name, revision=revision, trust_remote_code=True
+    )
+    messages = _sample_messages()
+    batch = build_assistant_only_labels(tokenizer, messages, max_seq_length=4096)
+    assert batch.assistant_token_count > 0
+    assert all(x == IGNORE_INDEX for x in batch.labels[: batch.prompt_token_count])
+    assert assistant_span_intact(batch, messages[-1]["content"], tokenizer)
+    assert not batch.truncated
+
+
+def test_qwen_one_batch_loss_when_weights_cached():
+    """Optional nonzero-loss proof on full Qwen weights (opt-in; heavy)."""
+    import os
+
+    if os.environ.get("CATAN_LLM_LOAD_QWEN") != "1":
+        pytest.skip(
+            "Set CATAN_LLM_LOAD_QWEN=1 to load full Qwen weights "
+            "(tokenizer mask + rental smoke already cover ticket 09)."
+        )
+
+    revision = qwen_revision()
+    model_name = qwen_model_name()
+    if revision is None:
+        pytest.skip("model.revision not pinned")
+
+    transformers = pytest.importorskip("transformers")
     torch = pytest.importorskip("torch")
 
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         model_name, revision=revision, trust_remote_code=True
     )
     messages = _sample_messages()
-    # Use a short synthetic chat so we do not need the full 8B weights for span checks.
     batch = build_assistant_only_labels(tokenizer, messages, max_seq_length=4096)
-    assert batch.assistant_token_count > 0
-    assert all(x == IGNORE_INDEX for x in batch.labels[: batch.prompt_token_count])
-    assert assistant_span_intact(batch, messages[-1]["content"], tokenizer)
 
-    # Prefer a tiny proxy model for nonzero-loss proof when 8B weights are absent;
-    # if the pinned Qwen weights are available locally, use them.
     try:
         model = transformers.AutoModelForCausalLM.from_pretrained(
             model_name,
             revision=revision,
             trust_remote_code=True,
             torch_dtype=torch.float32,
+            local_files_only=True,
         )
     except Exception as exc:  # noqa: BLE001
-        pytest.skip(f"Pinned Qwen weights unavailable in this environment: {exc}")
+        pytest.skip(f"Pinned Qwen weights unavailable locally: {exc}")
 
     model.eval()
     input_ids = torch.tensor([batch.input_ids], dtype=torch.long)

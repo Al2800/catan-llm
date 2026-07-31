@@ -25,11 +25,11 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | [06](issues/06-eval-gate-b-metrics.md) | Eval Gate-B metrics + 4p fixtures | 0.5 | done | 01 |
 | [07](issues/07-pov-audit-assistant-mask.md) | Teacher POV audit + assistant-mask test | 0.5 | done | 01, 04 |
 | [08](issues/08-ci-gate-tests.md) | CI gate tests | 0.5 | done | 02, 04–07 |
-| [09](issues/09-local-8b-qlora-smoke.md) | Qwen3.5-9B QLoRA smoke (rental; local 16GB no-go) | 0.5 | claimed | — (rental GPU) |
+| [09](issues/09-local-8b-qlora-smoke.md) | Qwen3.5-9B QLoRA smoke (rental; local 16GB no-go) | 0.5 | done | — |
 | [10](issues/10-tier-a-rationales.md) | Feature-aware POV-safe Tier A rationales | 1 | done | 04, 07 |
-| [11](issues/11-bulk-trajectory-generation.md) | Bulk trajectory generation (≥100k decisions) | 1 | blocked | 01–09 |
+| [11](issues/11-bulk-trajectory-generation.md) | Bulk trajectory generation (≥100k decisions) | 1 | ready-for-agent | 01–09 (done) |
 | [12](issues/12-dataset-builder-quality.md) | Dataset builder quality + manifests | 1 | blocked | 05, 10, 11 |
-| [13](issues/13-eval-holdout.md) | Immutable eval holdout set | 1 | blocked | 01–09 |
+| [13](issues/13-eval-holdout.md) | Immutable eval holdout set | 1 | ready-for-agent | 01–09 (done) |
 | [14](issues/14-dataset-quality-signoff.md) | Dataset quality report + Phase-1 sign-off | 1 | blocked | 12, 13 |
 | [15](issues/15-qlora-training-pipeline.md) | Production QLoRA training pipeline | 2 | blocked | 09, 14 |
 | [16](issues/16-serving-constrained-decoding.md) | Serving + constrained decoding path | 2 | blocked | 09 |
@@ -45,9 +45,9 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 
 ## Frontier right now (can start)
 
-- **09** — Qwen3.5-9B QLoRA smoke on **rental GPU** (local 16GB train no-go; see `docs/reports/hw_smoke_5060ti.md`)
-- Phase 1 scale (**11–14**) still blocked on **09** rental report; **12** also needs **11**
-- Local 5060 Ti remains useful for data gen / arena while rental smoke runs
+- **11** — bulk trajectory generation (≥100k decisions); **13** holdout can start in parallel after 09
+- **12** blocked on **11** (+ 05, 10); **14** blocked on 12+13
+- Local 5060 Ti remains useful for data gen / arena; QLoRA train stays on rental (≥24GB)
 
 ## Already done (not ticketed as open work)
 

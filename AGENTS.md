@@ -83,12 +83,12 @@ Training extras: `pip install -e ".[train]"` (+ bitsandbytes / Blackwell torch o
 
 ## Current code vs docs
 
-Phase 0.5 software cards **01–08** landed on `main`; ticket **10** (Tier A feature
-rationales) also landed. Remaining Phase 0.5: **09** — Qwen3.5-9B QLoRA smoke on a
-**rental GPU** (local 5060 Ti 16GB train is no-go; see `docs/reports/hw_smoke_5060ti.md`).
-Pin `model.revision` in `configs/qwen3.5-9b-qlora.yaml` during that smoke. Do not
-start the ≥100k data burn until **09** exits. Never lower `max_seq_length` below 4096
-to fit VRAM.
+Phase 0.5 **01–09** complete (T8 via HF Jobs L40S rental; local 16GB train no-go).
+Model pin: `Qwen/Qwen3.5-9B` @ `c202236235762e1c871ad0ccb60c8ee5ba337b9a`
+(`configs/qwen3.5-9b-qlora.yaml`). Reports:
+`docs/reports/hw_smoke_5060ti.md`, `docs/reports/hw_smoke_rental_l40s.md`.
+Ticket **10** (Tier A) also landed. Phase-1 scale (**11+**) may start. Never lower
+`max_seq_length` below 4096 to fit VRAM; QLoRA train stays on rental (≥24GB).
 
 ## License
 

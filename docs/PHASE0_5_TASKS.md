@@ -110,26 +110,26 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - Unfinished items may use `xfail(strict=True)` only with a task-id reason
 - Default CI avoids downloading 8B (Qwen one-batch skips until T8 pins revision)
 
-## T8 — Qwen3.5-9B QLoRA smoke (rental; local 16GB no-go)
+## T8 — Qwen3.5-9B QLoRA smoke (rental; local 16GB no-go) ✅
 
 **Goal:** Prove train path at label-safe context.  
-**Status:** local no-go documented; close via rental ([`reports/hw_smoke_5060ti.md`](reports/hw_smoke_5060ti.md))  
+**Status:** done — local no-go + rental **go** on HF Jobs L40S  
+([`reports/hw_smoke_5060ti.md`](reports/hw_smoke_5060ti.md),
+[`reports/hw_smoke_rental_l40s.md`](reports/hw_smoke_rental_l40s.md))  
 **Deps:** none (ideally after T2 for real prompts)  
-**Touch:** env pins, `configs/qwen3.5-9b-qlora.yaml`, `outputs/hw_smoke/report.json`.  
-**Model:** `Qwen/Qwen3.5-9B`  
+**Touch:** env pins, `configs/qwen3.5-9b-qlora.yaml`, rental smoke scripts.  
+**Model:** `Qwen/Qwen3.5-9B` @ `c202236235762e1c871ad0ccb60c8ee5ba337b9a`  
 **Done when:**
-- Local OOM / no-go documented (done 2026-07-31)
-- Rental checklist in [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md) / hw smoke report completed
-- Pinned Qwen **revision** recorded (no `revision: null` left in the successful report)
-- `max_seq_length >= 4096`; peak VRAM logged on rental
-- Micro-train + one game vs Random
-- **Do not** lower below label-safe length to fit 16GB
-- Report checked in under `docs/reports/` or `outputs/hw_smoke/`
+- [x] Local OOM / no-go documented (2026-07-31)
+- [x] Rental checklist completed (peak train VRAM 14.906 GB @ 4096)
+- [x] Pinned Qwen **revision** in config
+- [x] Micro-train + assistant-mask + one game vs Random
+- [x] Report under `docs/reports/hw_smoke_rental_l40s.md`
 
 ## T9 — Teacher POV audit + assistant-mask test ✅
 
 **Goal:** Lock distillation fairness and prove SFT loss hits labels.  
-**Status:** done (ticket 07) — Qwen revision one-batch still skips until T8  
+**Status:** done (ticket 07); rental smoke also re-proved mask on the pin  
 **Deps:** T1 (and T2 for real chat formatting)  
 **Touch:** `docs/TEACHER_POV.md`; `data/pov.py`; `training/masking.py`; `tests/test_teacher_pov.py`; `tests/test_assistant_mask.py`.  
 **Done when:**
@@ -139,12 +139,11 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
   - system/user tokens masked from loss
   - assistant JSON tokens have nonzero loss
   - full `{"action": ...}` span present (no truncation)
-- If the pin is not yet chosen, test may skip with clear message — but T8 must fix the pin and T9 must pass before Phase 1
+- Pin chosen in T8; mask helper proved on rental + CI stub path
 
 ---
 
 ## Exit
 
-Phase 0.5 software cards **T1–T7 + T9 are merged**. Remaining: **T8 report**
-(local success **or** explicit approved rental fallback on owner GPU).  
-Only then start Phase-1 generation toward ≥100k filtered decisions (SCOPE §5.2).
+Phase 0.5 **T1–T9 complete** (T8 via approved rental fallback).  
+Phase-1 generation toward ≥100k filtered decisions (SCOPE §5.2) may start.
