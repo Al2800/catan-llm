@@ -28,6 +28,43 @@ from catan_llm.training.sft import load_chat_jsonl
 DEFAULT_CONFIG = Path("configs/qwen3.5-9b-qlora.yaml")
 
 
+def _write_train_history_md(
+    path: Path, report: dict[str, Any], log_history: list[dict[str, Any]]
+) -> None:
+    """Compact markdown chart of train loss for humans / PR artifacts."""
+    losses = [
+        (row.get("step"), row.get("loss"))
+        for row in log_history
+        if isinstance(row, dict) and row.get("loss") is not None
+    ]
+    lines = [
+        "# QLoRA train history",
+        "",
+        f"- model: `{report.get('model')}`",
+        f"- revision: `{report.get('revision')}`",
+        f"- max_seq_length: {report.get('max_seq_length')}",
+        f"- peak_vram_gb: {report.get('peak_vram_gb')}",
+        f"- step_time_s: {report.get('step_time_s')}",
+        f"- train_loss: {report.get('train_loss')}",
+        "",
+        "## Loss samples",
+        "",
+        "| step | loss |",
+        "|---:|---:|",
+    ]
+    for step, loss in losses[:200]:
+        lines.append(f"| {step} | {loss} |")
+    if losses:
+        # Tiny sparkline via hashes scaled to min/max.
+        vals = [float(loss) for _, loss in losses]
+        lo, hi = min(vals), max(vals)
+        span = (hi - lo) or 1.0
+        blocks = "▁▂▃▄▅▆▇█"
+        spark = "".join(blocks[min(7, int((v - lo) / span * 7))] for v in vals[-64:])
+        lines.extend(["", f"sparkline (last {min(64, len(vals))}): `{spark}`", ""])
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
 @dataclass
 class QLoRATrainReport:
     config_path: str
@@ -465,6 +502,12 @@ def run_qlora_sft(
     (out_dir / "train_report.json").write_text(
         json.dumps(report.as_dict(), indent=2), encoding="utf-8"
     )
+    # Step telemetry for training visualization (ticket 17 / spectate-adjacent).
+    log_history = list(getattr(trainer.state, "log_history", []) or [])
+    (out_dir / "train_history.json").write_text(
+        json.dumps(log_history, indent=2), encoding="utf-8"
+    )
+    _write_train_history_md(out_dir / "train_history.md", report.as_dict(), log_history)
     # Persist a small copy of the resolved config for resume/audit.
     (out_dir / "resolved_config.yaml").write_text(
         yaml.safe_dump(

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from catan_llm.eval.arena import write_report
+from catan_llm.scripts.run_gate_b import _as_float, _win_rate
 
 
 def test_gate_b_thresholds_logic():
@@ -17,6 +18,13 @@ def test_gate_b_thresholds_logic():
     parse_rate, legality, finished = 0.99, 1.0, 200
     cand, wr = 0.40, 0.20
     assert not (parse_rate >= 0.995 and legality >= 0.995 and finished >= 200 and cand > wr)
+
+
+def test_win_rate_accepts_dict_or_float():
+    row = {"candidate": {"wins": 1, "rate": 0.5, "wilson95": [0.1, 0.9]}}
+    assert _win_rate(row, "candidate") == 0.5
+    assert _as_float(0.25) == 0.25
+    assert _as_float(None, default=0.1) == 0.1
 
 
 def test_write_gate_report(tmp_path: Path):

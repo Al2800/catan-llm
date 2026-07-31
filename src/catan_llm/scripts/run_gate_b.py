@@ -56,19 +56,20 @@ def main(adapter, fixture, games, seed, vps, out, config_path):
         candidate_player=llm,
     )
     results = report.get("results") or {}
-    parse_rate = float(results.get("parse_rate_model") or 0.0)
-    legality = float(results.get("legality_rate_model") or 0.0)
+    parse_rate = _as_float(results.get("parse_rate_model"), default=0.0)
+    legality = _as_float(results.get("legality_rate_model"), default=0.0)
     win_rates = results.get("win_rates") or {}
-    cand = float(win_rates.get("candidate") or 0.0)
-    wr = float(win_rates.get("weightedrandom") or 0.0)
+    cand = _win_rate(win_rates, "candidate")
+    wr = _win_rate(win_rates, "weightedrandom")
     finished = int(results.get("finished") or results.get("games") or 0)
     gaps = results.get("win_share_gap") or {}
-    gap = float(
+    gap = _as_float(
         gaps.get("candidate,weightedrandom")
-        or gaps.get("candidate_vs_weightedrandom")
-        or (cand - wr)
+        or gaps.get("candidate_vs_weightedrandom"),
+        default=cand - wr,
     )
 
+    # Always persist the arena report before pass/fail exit codes.
     gate = {
         "ticket": "17",
         "parse_rate_model": parse_rate,
@@ -96,6 +97,23 @@ def main(adapter, fixture, games, seed, vps, out, config_path):
     click.echo(f"Wrote {out}")
     if not gate["pass"]:
         raise SystemExit(2)
+
+
+def _as_float(value, *, default: float = 0.0) -> float:
+    if value is None:
+        return default
+    if isinstance(value, dict):
+        if "rate" in value:
+            return float(value["rate"])
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _win_rate(win_rates: dict, name: str) -> float:
+    return _as_float(win_rates.get(name), default=0.0)
 
 
 if __name__ == "__main__":

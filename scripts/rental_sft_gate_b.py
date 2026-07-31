@@ -63,13 +63,31 @@ def _upload_outputs(report: dict) -> None:
             )
         report_path = OUT_DIR / "ticket17_report.json"
         report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-        api.upload_file(
-            path_or_fileobj=str(report_path),
-            path_in_repo="ticket17_report.json",
-            repo_id=repo,
-            repo_type="model",
-            commit_message="ticket 17: train/gate report",
-        )
+        for name in (
+            "ticket17_report.json",
+            "train_report.json",
+            "train_history.json",
+            "train_history.md",
+            "resolved_config.yaml",
+        ):
+            path = OUT_DIR / name
+            if path.is_file():
+                api.upload_file(
+                    path_or_fileobj=str(path),
+                    path_in_repo=name,
+                    repo_id=repo,
+                    repo_type="model",
+                    commit_message=f"ticket 17: {name}",
+                )
+        gate_path = REPO_ROOT / "outputs" / "arena" / "gate_b_ladder4p.json"
+        if gate_path.is_file():
+            api.upload_file(
+                path_or_fileobj=str(gate_path),
+                path_in_repo="gate_b_ladder4p.json",
+                repo_id=repo,
+                repo_type="model",
+                commit_message="ticket 17: Gate B report",
+            )
         print(f"uploaded artifacts → hf://{repo}", flush=True)
     except Exception as exc:
         print(f"upload skipped/failed: {exc}", flush=True)

@@ -40,12 +40,13 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | [21](issues/21-champion-gate-c.md) | RL run + Gate C AlphaBeta champion | 3 | blocked | 20 |
 | [22](issues/22-12b-rental.md) | 12B-class rental run | 4 | blocked | 21 |
 | [23](issues/23-self-play-iteration.md) | Self-play iteration loop | 4 | blocked | 21 |
-| [24](issues/24-live-spectate.md) | Live spectate UX | 4 | blocked | 16 |
+| [24](issues/24-live-spectate.md) | Live spectate UX | 4 | done | 16 (done) |
 | [25](issues/25-blog-writeup.md) | Blog write-up + publishable artifacts | 4 | blocked | 21 |
 
 ## Frontier right now (can start)
 
-- **17** claimed — rental QLoRA SFT + `catan-gate-b` ladder-4p (`scripts/rental_sft_gate_b.py`)
+- **17** claimed — full rental QLoRA SFT + Gate B 200-game ladder (`scripts/rental_sft_gate_b.py`)
+- **24** done — `catan-spectate --watch` + replay JSON ([`SPECTATE.md`](../SPECTATE.md))
 - Prefer Mac/local CPU for long data burns; QLoRA train stays on rental (≥24GB)
 - Upload Mac holdout to HF before Gate B (see phase1 quality sign-off follow-ups)
 
