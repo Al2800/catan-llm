@@ -105,6 +105,8 @@ def run_match(
                         counters["legal_ok"],
                         counters["legal_total"],
                         counters.get("fallback_count", 0),
+                        action_error_hist=counters.get("action_error_hist"),
+                        phase_error_hist=counters.get("phase_error_hist"),
                     )
                 elif len(counters) >= 5:
                     stats.absorb_llm_counters(*counters[:5])

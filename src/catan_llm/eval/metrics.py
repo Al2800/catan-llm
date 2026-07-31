@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 
 from catan_llm.data.parser import FALLBACK_POLICY
@@ -33,6 +33,8 @@ class MatchStats:
     model_calls: int = 0
     seat_names: list[str] = field(default_factory=list)
     vp_margins: list[float] = field(default_factory=list)
+    action_error_hist: Counter[str] = field(default_factory=Counter)
+    phase_error_hist: Counter[str] = field(default_factory=Counter)
 
     def __post_init__(self):
         if self.wins is None:
@@ -80,6 +82,8 @@ class MatchStats:
         legal_ok: int,
         legal_total: int,
         fallback_count: int = 0,
+        action_error_hist: dict[str, int] | None = None,
+        phase_error_hist: dict[str, int] | None = None,
     ) -> None:
         """Bulk-add per-game LLMPlayer counters (Gate-B accounting)."""
         self.parse_ok += parse_ok
@@ -88,6 +92,10 @@ class MatchStats:
         self.legality_total += legal_total
         self.fallback_count += fallback_count
         self.model_calls += parse_total
+        if action_error_hist:
+            self.action_error_hist.update(action_error_hist)
+        if phase_error_hist:
+            self.phase_error_hist.update(phase_error_hist)
 
     def add_decision(self, *, parsed: bool | None = None, legal: bool | None = None):
         """Legacy helper — prefer ``absorb_llm_counters`` for Gate-B accounting."""
@@ -150,6 +158,8 @@ class MatchStats:
             "legality_rate_model": (self.legality_ok / model_n) if model_n else None,
             "fallback_rate": (self.fallback_count / model_n) if model_n else None,
             "fallback_policy": FALLBACK_POLICY,
+            "action_error_hist": dict(sorted(self.action_error_hist.items())),
+            "phase_error_hist": dict(sorted(self.phase_error_hist.items())),
             # Legacy aliases used by older smoke tests / reports.
             "parse_rate": (self.parse_ok / self.parse_total) if self.parse_total else None,
             "legality_rate": (

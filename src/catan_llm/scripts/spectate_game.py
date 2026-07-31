@@ -47,6 +47,19 @@ from catan_llm.serve.openai_client import chat_complete
     help="Watch bot ladder only (no LLM endpoint)",
 )
 @click.option(
+    "--adapter",
+    type=click.Path(path_type=Path, exists=True),
+    default=None,
+    help="PEFT adapter dir (in-process generate; needs CUDA + train extras)",
+)
+@click.option(
+    "--config",
+    "config_path",
+    type=click.Path(path_type=Path, exists=True),
+    default=Path("configs/qwen3.5-9b-qlora.yaml"),
+    show_default=True,
+)
+@click.option(
     "--opponents",
     default="random,weightedrandom,valuefunction",
     show_default=True,
@@ -59,7 +72,21 @@ from catan_llm.serve.openai_client import chat_complete
     show_default=True,
 )
 @click.option("--structured/--freeform", default=True, show_default=True)
-def main(base_url, model, api_key, seed, vps, watch, delay, bots_only, opponents, out, structured):
+def main(
+    base_url,
+    model,
+    api_key,
+    seed,
+    vps,
+    watch,
+    delay,
+    bots_only,
+    adapter,
+    config_path,
+    opponents,
+    out,
+    structured,
+):
     """Ticket 24: terminal spectate + JSON replay for one game."""
     assert FALLBACK_POLICY == "first_legal"
     colors = [Color.RED, Color.BLUE, Color.ORANGE, Color.WHITE]
@@ -77,6 +104,25 @@ def main(base_url, model, api_key, seed, vps, watch, delay, bots_only, opponents
         ]
         seat_labels = {
             colors[0].value: "candidate-bot",
+            colors[1].value: opp_kinds[0],
+            colors[2].value: opp_kinds[1],
+            colors[3].value: opp_kinds[2],
+        }
+    elif adapter is not None:
+        from catan_llm.training.masking import qwen_model_name
+        from catan_llm.training.peft_infer import load_peft_generator
+
+        _m, _t, complete = load_peft_generator(adapter, config_path=config_path)
+        label = qwen_model_name(config_path)
+        llm = LLMPlayer(colors[0], complete_fn=complete, model=label)
+        players = [
+            llm,
+            bot_seat(opp_kinds[0], colors[1]),
+            bot_seat(opp_kinds[1], colors[2]),
+            bot_seat(opp_kinds[2], colors[3]),
+        ]
+        seat_labels = {
+            colors[0].value: f"llm-adapter:{adapter}",
             colors[1].value: opp_kinds[0],
             colors[2].value: opp_kinds[1],
             colors[3].value: opp_kinds[2],
@@ -125,7 +171,8 @@ def main(base_url, model, api_key, seed, vps, watch, delay, bots_only, opponents
         "events": len(result.events),
         "replay": str(out),
         "bots_only": bots_only,
-        "base_url": None if bots_only else base_url,
+        "adapter": str(adapter) if adapter else None,
+        "base_url": None if (bots_only or adapter) else base_url,
         "model": None if bots_only else model,
     }
     click.echo(json.dumps(summary, indent=2))
