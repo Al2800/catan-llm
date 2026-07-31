@@ -23,13 +23,16 @@ raw/train_main.jsonl(+.journal)
 train_cohort_report.json
 ```
 
-## What was stopped (ticket 13 ⏸)
+## Ticket 13 — completed on Mac ✅
 
 | Item | Value |
 |---|---|
-| Progress on cloud | **~1,725 / 5,000** games (abandoned — do **not** resume this partial) |
-| Why abandon | Partial JSONL lived only on the cloud VM; cleaner to regenerate holdout on Mac |
-| Your job | Run a **fresh** 5k-game `eval_holdout` burn locally |
+| Cloud progress (abandoned) | ~1,725 / 5,000 — not resumed |
+| Fresh Mac burn | **5,000 / 5,000** games, 8 workers, ~35 min |
+| Filtered decisions | 1,316,632 |
+| Manifest | `immutable: true`, `role: eval_holdout` |
+| holdout.jsonl sha256 | `5809a9fc1ed42b2fda29abdd77e37980f895ab52e7c5787023fce2fc7ccd1bfc` |
+| Details | [`phase1_cohort_progress.md`](phase1_cohort_progress.md) |
 
 ## Mac setup
 
