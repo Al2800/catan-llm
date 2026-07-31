@@ -439,7 +439,6 @@ def run_qlora_sft(
     if step_time:
         derived_step = round(1.0 / float(step_time), 4)
     else:
-        n_steps = metrics.get("train_runtime") and metrics.get("epoch")
         global_step = getattr(trainer.state, "global_step", None)
         if global_step and global_step > 0:
             derived_step = round(runtime / float(global_step), 4)
