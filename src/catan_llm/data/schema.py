@@ -103,6 +103,9 @@ class DatasetManifest(BaseModel):
     # Ticket 13: eval holdout must never enter training.
     immutable: bool = False
     role: str | None = None  # e.g. "train", "eval_holdout"
+    # DATA_CONTRACT §9
+    max_seq_length: int = 4096
+    quality: dict[str, Any] = Field(default_factory=dict)
 
 
 def require_schema_v2(records: list[DecisionRecord], *, context: str = "dataset") -> None:

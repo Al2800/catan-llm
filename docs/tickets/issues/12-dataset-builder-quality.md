@@ -4,13 +4,20 @@
 unfinished/illegal drops, no-truncation checks, balancing/rare-action
 oversample, game_key splits, and complete manifests.
 
-**Blocked by:** 05, 10, 11
+**Blocked by:** 05, 10, 11 (done)
 
-**Status:** blocked
+**Status:** done (2026-07-31)
 
 **Phase:** 1
 
-- [ ] Filters and no-truncation assert at max_seq_length≥4096
-- [ ] Rare-action / phase balance reported
-- [ ] train/val/test emitted with checksums
-- [ ] Manifest matches DATA_CONTRACT §9
+## Entrypoints
+
+- `catan_llm.data.quality.filter_decision_records`
+- `build_chat_dataset` → `manifest.json` + `quality.json` (DATA_CONTRACT §9)
+
+## Acceptance criteria
+
+- [x] Filters and no-truncation assert at max_seq_length≥4096 (enforced when tokenizer available; else recorded as skipped)
+- [x] Rare-action / phase / turn-tercile balance reported in `quality`
+- [x] train/val/test emitted with checksums
+- [x] Manifest matches DATA_CONTRACT §9 (`max_seq_length`, `quality`, checksums, commits, prompt_version)

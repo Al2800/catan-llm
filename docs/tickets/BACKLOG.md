@@ -28,11 +28,11 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 | [09](issues/09-local-8b-qlora-smoke.md) | Qwen3.5-9B QLoRA smoke (rental; local 16GB no-go) | 0.5 | done | — |
 | [10](issues/10-tier-a-rationales.md) | Feature-aware POV-safe Tier A rationales | 1 | done | 04, 07 |
 | [11](issues/11-bulk-trajectory-generation.md) | Bulk trajectory generation (≥100k decisions) | 1 | done | 01–09 (done) |
-| [12](issues/12-dataset-builder-quality.md) | Dataset builder quality + manifests | 1 | blocked | 05, 10, 11 |
+| [12](issues/12-dataset-builder-quality.md) | Dataset builder quality + manifests | 1 | done | 05, 10, 11 |
 | [13](issues/13-eval-holdout.md) | Immutable eval holdout set | 1 | claimed | 01–09 (done) |
 | [14](issues/14-dataset-quality-signoff.md) | Dataset quality report + Phase-1 sign-off | 1 | blocked | 12, 13 |
 | [15](issues/15-qlora-training-pipeline.md) | Production QLoRA training pipeline | 2 | blocked | 09, 14 |
-| [16](issues/16-serving-constrained-decoding.md) | Serving + constrained decoding path | 2 | blocked | 09 |
+| [16](issues/16-serving-constrained-decoding.md) | Serving + constrained decoding path | 2 | done | 09 |
 | [17](issues/17-sft-run-gate-b.md) | SFT run + Gate B ladder eval | 2 | blocked | 15, 16 |
 | [18](issues/18-failure-taxonomy-v1.md) | Failure taxonomy v1 | 2 | blocked | 17 |
 | [19](issues/19-fill-rl-spec.md) | Fill RL_SPEC (reward / anti-hack / cost) | 3 | blocked | 17 |
@@ -45,8 +45,8 @@ Source of truth for outstanding work. Derived from [`SCOPE.md`](../SCOPE.md) and
 
 ## Frontier right now (can start)
 
-- **13** claimed — finish holdout on Mac ([`MAC_HANDOFF_PHASE1.md`](../reports/MAC_HANDOFF_PHASE1.md)); **11** done
-- **12** ready once **11** merges (05, 10 done); **14** blocked on 12+13
+- **13** claimed — finish holdout on Mac ([`MAC_HANDOFF_PHASE1.md`](../reports/MAC_HANDOFF_PHASE1.md))
+- **12** + **16** done on this branch; **14** waits on 13 (+ 12)
 - Prefer Mac/local CPU for long data burns; QLoRA train stays on rental (≥24GB)
 
 ## Already done (not ticketed as open work)

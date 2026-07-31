@@ -12,10 +12,15 @@ from catan_llm import __version__
 from catan_llm.data.identity import CATANATRON_COMMIT, PROMPT_VERSION, resolve_source_commit
 from catan_llm.data.parser import format_assistant_target
 from catan_llm.data.pov import assert_tier_a_pov_safe
+from catan_llm.data.quality import (
+    filter_decision_records,
+    try_load_truncation_tokenizer,
+)
 from catan_llm.data.renderer import render_system_prompt, render_user_prompt
 from catan_llm.data.schema import DatasetManifest, DecisionRecord, require_schema_v2
 from catan_llm.data.tier_a import render_tier_a_rationale
 from catan_llm.sim.trajectories import read_jsonl
+from catan_llm.training.masking import qwen_max_seq_length
 
 
 def _sha256_file(path: Path) -> str:
@@ -113,12 +118,28 @@ def build_chat_dataset(
     role: str | None = None,
     notes: str | None = None,
     split: bool = True,
+    max_seq_length: int | None = None,
+    check_truncation: bool = True,
+    tokenizer=None,
 ) -> DatasetManifest:
+    """Build chat JSONL + DATA_CONTRACT §9 manifest (ticket 12 quality filters)."""
     records = read_jsonl(Path(trajectory_path))
     if require_v2:
         require_schema_v2(records, context="build_chat_dataset")
-    # Drop decisions where action wasn't in the listed legal set.
-    records = [r for r in records if r.action_index >= 0]
+
+    max_len = int(max_seq_length if max_seq_length is not None else qwen_max_seq_length())
+    tok = tokenizer
+    if check_truncation and tok is None:
+        tok = try_load_truncation_tokenizer()
+
+    records, filter_stats = filter_decision_records(
+        records,
+        max_seq_length=max_len,
+        include_rationale=include_rationale,
+        tokenizer=tok,
+        check_truncation=check_truncation,
+    )
+
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -143,11 +164,14 @@ def build_chat_dataset(
     seeds = sorted({r.seed for r in records})
     bot_config = records[0].bot_config if records else []
     map_type = records[0].map_type if records else "BASE"
-    default_notes = "schema v2; splits by game_key; prompts from live renderer"
+    default_notes = (
+        "schema v2; splits by game_key; prompts from live renderer; "
+        "DATA_CONTRACT §7 filters + §9 quality"
+    )
     if immutable:
         default_notes = (
             "IMMUTABLE eval holdout — never train on this artifact; "
-            "schema v2; prompts from live renderer"
+            "schema v2; prompts from live renderer; DATA_CONTRACT §7 filters"
         )
     manifest = DatasetManifest(
         name=name,
@@ -170,9 +194,15 @@ def build_chat_dataset(
         notes=notes or default_notes,
         immutable=immutable,
         role=role or ("eval_holdout" if immutable else "train"),
+        max_seq_length=max_len,
+        quality=filter_stats.as_quality_dict(),
     )
     (out_dir / "manifest.json").write_text(
         manifest.model_dump_json(indent=2), encoding="utf-8"
+    )
+    # Also write a small quality sidecar for humans / ticket 14.
+    (out_dir / "quality.json").write_text(
+        json.dumps(filter_stats.as_quality_dict(), indent=2), encoding="utf-8"
     )
     return manifest
 
