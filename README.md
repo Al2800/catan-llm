@@ -39,7 +39,7 @@ to wire issue tracker / triage defaults for this repo.
 Locked decisions (see SCOPE §12):
 
 - Base model: **Qwen3.5-9B** (`Qwen/Qwen3.5-9B`, Apache-2.0), QLoRA-first
-- Primary hardware: RTX 5060 Ti 16GB (local), burst rentals for RL scale
+- Hardware: RTX 5060 Ti for data/eval; **rental GPU for Qwen3.5-9B QLoRA** (16GB train no-go)
 - Train/play prompts must be identical; schema **v2** + `prompt_version`
 - Privileged teacher distillation OK; learner prompts + Tier A text stay POV-limited
 - Fallback: **`first_legal`**

@@ -279,9 +279,9 @@ All evals run through the same arena code with pinned seeds and published config
 
 | Tier | Hardware | What it supports |
 |---|---|---|
-| **Local (locked): RTX 5060 Ti 16GB** | Owner's workstation | Data generation, dataset builds, eval arena, **QLoRA SFT of Qwen3.5-9B** (~10–14GB VRAM with 4-bit base + gradient checkpointing; prove in ticket 09), 4-bit vLLM serving for live play, **small-scale GRPO** (feasible but slow) |
+| **Local (locked): RTX 5060 Ti 16GB** | Owner's workstation | Data generation, dataset builds, eval arena, optional inference probes. **Not** sufficient for Qwen3.5-9B QLoRA train at ≥4096 (2026-07-31 finding — see [`reports/hw_smoke_5060ti.md`](reports/hw_smoke_5060ti.md)). |
 | **Dev / CPU** | Any modern machine | Simulator (thousands of games/min), dataset builds, bot-vs-bot eval, CI, Stage-0 spike with a small model |
-| **Burst rental** | 1× A100/H100 80GB | Larger-batch QLoRA/LoRA SFT, meaningfully faster GRPO iterations, 12B QLoRA |
+| **Burst rental** | 1× 24–80GB GPU (A6000/A100/H100/L40S/…) | **Primary path for Qwen3.5-9B QLoRA SFT** + faster GRPO; required for ticket 09 exit |
 | **Scale rental** | 2–4× 80GB GPUs | Full-FT of 8B (≈60–88GB), serious GRPO at 8–12B, 12–14B full-FT (≈140–174GB) |
 
 **Toolchain note:** the 5060 Ti is a Blackwell card (sm_120) — it needs recent PyTorch (cu128+ builds) and a current vLLM. Exact pins and a local validation checklist live in [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md). The 16GB VRAM ceiling is the binding local constraint: no full fine-tuning and no 12B training locally; both are rental-only paths.
@@ -291,7 +291,7 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 **Hard gates before ≥100k generation:**
 
 1. Phase 0.5 task cards T1–T7 + T9 merged (contracts, parity, CI gates, masking/POV audit).
-2. T8 local Qwen3.5-9B QLoRA smoke on the 5060 Ti succeeds **or** an explicit rental fallback is approved in the T8 report.
+2. T8 Qwen3.5-9B QLoRA smoke succeeds on rental (local 16GB train path is no-go; see [`reports/hw_smoke_5060ti.md`](reports/hw_smoke_5060ti.md)).
 3. Peak VRAM / tokens/sec / approved cohort size recorded.
 
 ### 9.2 Software stack
@@ -360,7 +360,7 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 
 1. **Repo strategy → split.** Canonical home is `catan-llm` (this repo), not `dataversen`.
 2. **Base model → `Qwen/Qwen3.5-9B`** (Apache-2.0; nearest 8B-class Qwen3.5 checkpoint). 12B-class step-up deferred to Phase 4 and rental-only.
-3. **Compute → owner's RTX 5060 Ti 16GB is the primary box.** QLoRA-first mandatory; full-FT / 12B / serious GRPO behind burst rentals.
+3. **Compute → 5060 Ti for data/eval; rental for Qwen3.5-9B QLoRA train.** Local 16GB train smoke failed (2026-07-31). Full-FT / 12B / serious GRPO remain rental-only.
 4. **Teacher-model commentary → deferred.** Tier A only through Phase 2; revisit Tier B after SFT results.
 5. **Trading → later.** Catanatron-native action space only for the initial project.
 6. **Endgame → semi-public.** Blog write-up + publishable benchmark artifacts.
@@ -370,7 +370,7 @@ Data generation itself is CPU-only and cheap; the GPU budget is dominated by RL 
 7. **Experiment tracking → local JSON reports first**; W&B optional later.
 8. **Train/play consistency is a hard gate.** One canonical renderer; compact alternate training prompts are forbidden for labeled SFT data.
 9. **AlphaBeta claims require a pre-registered fixture** (commit, depth, seats, maps, seeds, metrics) in [`EVAL_PROTOCOL.md`](EVAL_PROTOCOL.md).
-10. **No ≥100k dataset build until local Qwen3.5-9B QLoRA smoke succeeds** on the 5060 Ti.
+10. **No ≥100k dataset build until Qwen3.5-9B QLoRA smoke succeeds** (rental OK; local 16GB train is no-go).
 11. **Smoke parse/legality ≠ skill.** Promotion uses held-out win-rate / VP / failure taxonomy with fallbacks accounted separately.
 12. **Fallback policy → `first_legal`** (engine-ordered). Do not use highest-pip fallback unless a future protocol version changes this.
 13. **Trajectory schema → v2** for contract fields (`game_key`, `map_hash`, `prompt_version`, …). Legacy plumbing records labelled v1 are not Phase-1-valid.
@@ -426,3 +426,4 @@ Engineering skills are vendored under `.cursor/skills/engineering/`. They are **
 | 2026-07-30 | Second review → privileged-teacher POV policy; Gate B win-share fix; 4p headline fixtures; 4096 VRAM caveat; assistant-mask + teacher-audit task (T9); Phase-1 cohort plan; branch/base handoff warning; Phase 0.5 dependency graph. |
 | 2026-07-30 | Phase 0 pack merged to `main`; ticket 00 done; subsequent work stays on `main`. |
 | 2026-07-30 | Base model lock → `Qwen/Qwen3.5-9B` (Qwen3-8B-Instruct no longer resolves; Qwen3.5 has no dense 8B). |
+| 2026-07-31 | Local 5060 Ti 16GB declared no-go for Qwen3.5-9B QLoRA train; ticket 09 exits via rental smoke. |

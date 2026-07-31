@@ -110,19 +110,21 @@ T8 (5060 Ti 8B smoke) ── parallel on owner GPU; blocks Phase 1
 - Unfinished items may use `xfail(strict=True)` only with a task-id reason
 - Default CI avoids downloading 8B (Qwen one-batch skips until T8 pins revision)
 
-## T8 — Local Qwen3.5-9B QLoRA smoke (owner GPU)
+## T8 — Qwen3.5-9B QLoRA smoke (rental; local 16GB no-go)
 
-**Goal:** Prove 5060 Ti path at label-safe context.  
+**Goal:** Prove train path at label-safe context.  
+**Status:** local no-go documented; close via rental ([`reports/hw_smoke_5060ti.md`](reports/hw_smoke_5060ti.md))  
 **Deps:** none (ideally after T2 for real prompts)  
 **Touch:** env pins, `configs/qwen3.5-9b-qlora.yaml`, `outputs/hw_smoke/report.json`.  
-**Model:** `Qwen/Qwen3.5-9B` (not Qwen3-8B-Instruct — unresolvable; Qwen3.5 has no dense 8B).
+**Model:** `Qwen/Qwen3.5-9B`  
 **Done when:**
-- Checklist in [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md) completed
+- Local OOM / no-go documented (done 2026-07-31)
+- Rental checklist in [`ENV_BLACKWELL.md`](ENV_BLACKWELL.md) / hw smoke report completed
 - Pinned Qwen **revision** recorded (no `revision: null` left in the successful report)
-- `max_seq_length >= 4096`; peak VRAM logged
+- `max_seq_length >= 4096`; peak VRAM logged on rental
 - Micro-train + one game vs Random
-- If OOM: document prompt-compression or rental fallback — **do not** lower below label-safe length
-- Report checked in or attached to PR
+- **Do not** lower below label-safe length to fit 16GB
+- Report checked in under `docs/reports/` or `outputs/hw_smoke/`
 
 ## T9 — Teacher POV audit + assistant-mask test ✅
 

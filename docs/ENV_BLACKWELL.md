@@ -58,9 +58,14 @@ Run on the 5060 Ti; save outputs under `outputs/hw_smoke/`:
 |---|---|---|
 | Torch has no kernel for sm_120 | Torch too old | Upgrade to cu128+ build |
 | bitsandbytes import / 4bit fail | Incompatible bnb/torch | Pin matching pair; try `transformers` quantization config variants |
-| OOM at seq 2k+ | Context too long / no checkpointing | Lower `max_seq_length`, enable grad checkpointing, smaller LoRA rank |
+| OOM at load or train on 16GB | 9B + QLoRA/opt/activations exceed card | **Do not** lower `max_seq_length` below 4096; use **rental GPU** (approved). Optional: inference-only probe locally |
 | vLLM won't start | Build lacks Blackwell | Pin newer vLLM or serve via HF for Phase 2 interim |
 
 ## 6. Gate language
 
-SCOPE decision §12.10: **No ≥100k dataset build until local Qwen3.5-9B QLoRA smoke succeeds** and this report exists.
+SCOPE decision §12.10 (updated): **No ≥100k dataset build until the Qwen3.5-9B
+QLoRA smoke report exists** — local success **or** approved rental fallback with
+pinned revision.
+
+**2026-07-31 local result:** 5060 Ti 16GB is **no-go** for train smoke. See
+[`reports/hw_smoke_5060ti.md`](reports/hw_smoke_5060ti.md). Close T8 via rental.
