@@ -46,7 +46,16 @@ def main():
 
 
 @main.command("train")
-@click.option("--target-decisions", default=100_000, show_default=True, type=int)
+@click.option(
+    "--target-decisions",
+    default=112_000,
+    show_default=True,
+    type=int,
+    help=(
+        "Stop at this many filtered decisions before split. Default 112k so the "
+        "90% train split is ≥100k (SCOPE §5.2 / DATA_CONTRACT)."
+    ),
+)
 @click.option("--max-games", default=2_000, show_default=True, type=int)
 @click.option("--mini-games", default=300, show_default=True, type=int)
 @click.option("--workers", default=4, show_default=True, type=int)
@@ -112,7 +121,6 @@ def train_cmd(target_decisions, max_games, mini_games, workers, out_dir, skip_mi
         seed_range = _range_meta("train_main")
 
     report["num_filtered_decisions"] = count_filtered_decisions(traj_for_ds)
-    report["target_met"] = report["num_filtered_decisions"] >= target_decisions
 
     if not skip_dataset:
         manifest = build_chat_dataset(
@@ -125,8 +133,12 @@ def train_cmd(target_decisions, max_games, mini_games, workers, out_dir, skip_mi
             role="train",
             split=True,
         )
-        # When both slices used, seed_range is a composite dict — OK for manifest.
         report["dataset_manifest"] = json.loads(manifest.model_dump_json())
+        train_n = int(manifest.split_counts.get("train", 0))
+        report["train_split_decisions"] = train_n
+        report["target_met"] = train_n >= 100_000
+    else:
+        report["target_met"] = report["num_filtered_decisions"] >= target_decisions
 
     report_path = out_dir / "train_cohort_report.json"
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
