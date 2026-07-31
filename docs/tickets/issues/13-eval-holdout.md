@@ -3,13 +3,20 @@
 **What to build:** Generate the separate `eval_holdout` seed-range games/decisions
 that never enter training. Record immutability in the manifest.
 
-**Blocked by:** 01, 02, 03, 04, 05, 06, 07, 08, 09
+**Blocked by:** 01–09 (done)
 
-**Status:** blocked
+**Status:** claimed
 
 **Phase:** 1
 
-- [ ] Uses `eval_holdout` from SEED_REGISTRY only
-- [ ] ≥5k games (or approved amendment) generated
-- [ ] No overlap with train seed ranges
-- [ ] Holdout artifact + checksum published
+## Entrypoints
+
+- `catan-phase1-cohort holdout --games 5000 --workers 4`
+- Manifest: `immutable=true`, `role=eval_holdout`, single `holdout.jsonl`
+
+## Acceptance criteria
+
+- [x] Uses `eval_holdout` from SEED_REGISTRY only (wired + tested)
+- [ ] ≥5k games generated
+- [x] No overlap with train seed ranges (registry + runtime assert)
+- [ ] Holdout artifact + checksum published (`immutable` on manifest)

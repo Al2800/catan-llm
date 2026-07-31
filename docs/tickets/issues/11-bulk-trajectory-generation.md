@@ -4,13 +4,20 @@
 ≥100k **filtered** train decisions exist. Use registry seed ranges; stop at
 target, don’t blindly burn the full reservation.
 
-**Blocked by:** 01, 02, 03, 04, 05, 06, 07, 08, 09
+**Blocked by:** 01–09 (done)
 
-**Status:** blocked
+**Status:** claimed
 
 **Phase:** 1
 
-- [ ] Generation uses schema v2 + resume-safe writes + named seed ranges
-- [ ] Bot mix / map slices match cohort table (or an approved PR update to it)
+## Entrypoints
+
+- `catan-generate --target-decisions … --seed-range-name train_main --rotate-seats`
+- `catan-phase1-cohort train --target-decisions 100000 --workers 4`
+
+## Acceptance criteria
+
+- [x] Generation uses schema v2 + resume-safe writes + named seed ranges
+- [x] Bot mix / map slices match cohort table (train_main rotated ladder; optional MINI)
 - [ ] ≥100k filtered train decisions produced
 - [ ] Manifest records counts, checksums, commits, prompt_version
