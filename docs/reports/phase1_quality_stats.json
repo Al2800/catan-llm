@@ -1,0 +1,128 @@
+{
+  "artifact": "data/phase1/processed/expert-v1",
+  "role": "train",
+  "schema_versions": {
+    "v2": 112754
+  },
+  "prompt_versions": {
+    "2026-07-30.1": 112754
+  },
+  "num_games": 440,
+  "num_seeds": 440,
+  "seed_min": 0,
+  "seed_max": 439,
+  "filter_stats": {
+    "unfinished_dropped": 0,
+    "illegal_dropped": 0,
+    "truncated_dropped": 0,
+    "raw_decisions": 112754,
+    "kept": 112754,
+    "truncation_check": "disabled",
+    "action_type_hist": {
+      "BUILD_CITY": 2028,
+      "BUILD_ROAD": 13013,
+      "BUILD_SETTLEMENT": 6000,
+      "BUY_DEVELOPMENT_CARD": 1621,
+      "DISCARD": 3190,
+      "END_TURN": 34210,
+      "MARITIME_TRADE": 10315,
+      "MOVE_ROBBER": 6569,
+      "PLAY_KNIGHT_CARD": 828,
+      "PLAY_MONOPOLY": 113,
+      "PLAY_ROAD_BUILDING": 93,
+      "PLAY_YEAR_OF_PLENTY": 126,
+      "ROLL": 34648
+    },
+    "phase_hist": {
+      "BUILD_INITIAL_ROAD": 3520,
+      "BUILD_INITIAL_SETTLEMENT": 3520,
+      "DISCARD": 3190,
+      "MOVE_ROBBER": 6569,
+      "PLAY_TURN": 95955
+    },
+    "rare_action_hist": {
+      "BUY_DEVELOPMENT_CARD": 1621,
+      "MARITIME_TRADE": 10315,
+      "MOVE_ROBBER": 6569,
+      "PLAY_KNIGHT_CARD": 828,
+      "PLAY_MONOPOLY": 113,
+      "PLAY_ROAD_BUILDING": 93,
+      "PLAY_YEAR_OF_PLENTY": 126
+    },
+    "turn_tercile_hist": {
+      "early": 33351,
+      "late": 42111,
+      "mid": 37292
+    }
+  },
+  "truncation_sample": {
+    "n": 2000,
+    "max_seq_length": 4096,
+    "tokenizer": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "truncated_dropped": 0,
+    "kept": 2000,
+    "truncation_check": "enforced",
+    "illegal_dropped": 0,
+    "unfinished_dropped": 0
+  },
+  "chat_histograms": {
+    "action_type_hist": {
+      "BUILD_CITY": 2028,
+      "BUILD_ROAD": 13013,
+      "BUILD_SETTLEMENT": 6000,
+      "BUY_DEVELOPMENT_CARD": 1621,
+      "DISCARD": 3190,
+      "END_TURN": 34210,
+      "MARITIME_TRADE": 10315,
+      "MOVE_ROBBER": 6569,
+      "PLAY_KNIGHT_CARD": 828,
+      "PLAY_MONOPOLY": 113,
+      "PLAY_ROAD_BUILDING": 93,
+      "PLAY_YEAR_OF_PLENTY": 126,
+      "ROLL": 34648
+    },
+    "phase_hist": {
+      "BUILD_INITIAL_ROAD": 3520,
+      "BUILD_INITIAL_SETTLEMENT": 3520,
+      "DISCARD": 3190,
+      "MOVE_ROBBER": 6569,
+      "PLAY_TURN": 95955
+    },
+    "expert_policy_hist": {
+      "alphabeta": 31252,
+      "random": 25210,
+      "valuefunction": 30679,
+      "weightedrandom": 25613
+    },
+    "rare_action_hist": {
+      "BUY_DEVELOPMENT_CARD": 1621,
+      "MARITIME_TRADE": 10315,
+      "MOVE_ROBBER": 6569,
+      "PLAY_KNIGHT_CARD": 828,
+      "PLAY_MONOPOLY": 113,
+      "PLAY_ROAD_BUILDING": 93,
+      "PLAY_YEAR_OF_PLENTY": 126
+    },
+    "turn_tercile_hist": {
+      "early": 33351,
+      "mid": 37292,
+      "late": 42111
+    }
+  },
+  "chat_char_length": {
+    "p50": 3944.0,
+    "p90": 4646.0,
+    "p99": 5188.0,
+    "max": 6022
+  },
+  "checksums_verified": {
+    "train.jsonl": "64bdb154ba089b55b761c1c9b07f2a9e015911d1bb105f4b94fc2a1e1573a7f7",
+    "val.jsonl": "b5480469178ffd967097d580e2f29d067b3740858cda643e52a762a169112290",
+    "test.jsonl": "b8018068ffe91b6a1daa433ae2862335ddfc3cd00a79111ba7e192a1a19683c0"
+  },
+  "split_counts": {
+    "train": 101303,
+    "val": 5458,
+    "test": 5993
+  }
+}
