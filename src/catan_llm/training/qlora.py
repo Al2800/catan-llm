@@ -306,8 +306,17 @@ def run_qlora_sft(
         train_file or data_cfg.get("train_file") or "data/phase1/processed/expert-v1/train.jsonl",
         repo_root=root,
     )
-    val_raw = val_file if val_file is not None else data_cfg.get("val_file")
-    val_path = resolve_data_path(val_raw, repo_root=root) if val_raw else None
+    # ``val_file=""`` / falsey non-None disables eval (rental ``--skip-eval``).
+    # Only ``None`` means “fall back to config”.
+    if val_file is not None:
+        val_raw = val_file
+    else:
+        val_raw = data_cfg.get("val_file")
+    val_path = (
+        resolve_data_path(val_raw, repo_root=root)
+        if val_raw not in (None, "", False)
+        else None
+    )
     out_dir = Path(
         output_dir or train_cfg.get("output_dir") or "outputs/sft/qwen3.5-9b-qlora"
     )

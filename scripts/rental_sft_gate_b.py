@@ -180,7 +180,7 @@ def main() -> int:
             train_report = run_qlora_sft(
                 REPO_ROOT / "configs" / "qwen3.5-9b-qlora.yaml",
                 train_file=DATA_DIR / "train.jsonl",
-                val_file=None if args.skip_eval else (DATA_DIR / "val.jsonl"),
+                val_file="" if args.skip_eval else (DATA_DIR / "val.jsonl"),
                 output_dir=OUT_DIR,
                 max_steps=args.max_steps,
                 max_samples=args.max_samples,
