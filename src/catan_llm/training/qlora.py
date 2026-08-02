@@ -306,8 +306,17 @@ def run_qlora_sft(
         train_file or data_cfg.get("train_file") or "data/phase1/processed/expert-v1/train.jsonl",
         repo_root=root,
     )
-    val_raw = val_file if val_file is not None else data_cfg.get("val_file")
-    val_path = resolve_data_path(val_raw, repo_root=root) if val_raw else None
+    # ``val_file=""`` / falsey non-None disables eval (rental ``--skip-eval``).
+    # Only ``None`` means “fall back to config”.
+    if val_file is not None:
+        val_raw = val_file
+    else:
+        val_raw = data_cfg.get("val_file")
+    val_path = (
+        resolve_data_path(val_raw, repo_root=root)
+        if val_raw not in (None, "", False)
+        else None
+    )
     out_dir = Path(
         output_dir or train_cfg.get("output_dir") or "outputs/sft/qwen3.5-9b-qlora"
     )
@@ -461,6 +470,18 @@ def run_qlora_sft(
         processing_class=tokenizer,
     )
 
+    from catan_llm.training.hub_checkpoints import (
+        HubCheckpointUploadCallback,
+        resolve_hub_checkpoint_repo,
+    )
+
+    hub_repo = resolve_hub_checkpoint_repo(train_cfg.get("hub_checkpoint_repo"))
+    hub_cb = None
+    if hub_repo:
+        hub_cb = HubCheckpointUploadCallback(hub_repo)
+        trainer.add_callback(hub_cb.as_trainer_callback())
+        print(f"hub-checkpoint: will upload saves → hf://{hub_repo}/checkpoints/", flush=True)
+
     train_result = trainer.train(
         resume_from_checkpoint=str(resume_from) if resume_from else None
     )
@@ -470,6 +491,8 @@ def run_qlora_sft(
 
     runtime = round(time.time() - t0, 2)
     metrics = dict(getattr(train_result, "metrics", {}) or {})
+    if hub_cb is not None:
+        metrics["hub_checkpoint_uploads"] = list(hub_cb.uploaded)
     # Prefer trainer-reported step time; else derive from runtime / steps.
     step_time = metrics.get("train_steps_per_second")
     derived_step = None

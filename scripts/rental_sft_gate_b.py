@@ -42,6 +42,15 @@ def _download_expert_v1() -> None:
         shutil.copy2(local, dest)
 
 
+def _download_hub_checkpoint(repo_id: str, checkpoint: str, dest: Path) -> Path:
+    from catan_llm.training.hub_checkpoints import download_hub_checkpoint
+
+    print(f"download resume checkpoint {checkpoint} from {repo_id}", flush=True)
+    path = download_hub_checkpoint(repo_id, checkpoint, dest)
+    print(f"resume checkpoint ready at {path}", flush=True)
+    return path
+
+
 def _upload_outputs(report: dict) -> None:
     token = os.environ.get("HF_TOKEN")
     if not token:
@@ -99,12 +108,35 @@ def main() -> int:
     ap.add_argument("--max-samples", type=int, default=None)
     ap.add_argument("--skip-train", action="store_true")
     ap.add_argument("--skip-gate", action="store_true")
+    ap.add_argument(
+        "--skip-eval",
+        action="store_true",
+        help="Skip mid-train val eval (faster chunks; Hub checkpoints still upload)",
+    )
     ap.add_argument("--gate-games", type=int, default=200)
     ap.add_argument(
         "--adapter",
         type=Path,
         default=None,
         help="Existing adapter (skip train)",
+    )
+    ap.add_argument(
+        "--resume-from",
+        type=Path,
+        default=None,
+        help="Local Trainer checkpoint dir (e.g. outputs/.../checkpoint-400)",
+    )
+    ap.add_argument(
+        "--resume-from-hub",
+        type=str,
+        default=None,
+        help="Hub checkpoint name or repo:name (default repo AlCampbell/catan-llm-sft-v1)",
+    )
+    ap.add_argument(
+        "--hub-checkpoint-repo",
+        type=str,
+        default=None,
+        help="Override mid-run checkpoint upload repo (empty string disables)",
     )
     args = ap.parse_args()
 
@@ -129,6 +161,18 @@ def main() -> int:
 
         _download_expert_v1()
 
+        if args.hub_checkpoint_repo is not None:
+            os.environ["CATAN_HUB_CHECKPOINT_REPO"] = args.hub_checkpoint_repo
+
+        resume_from = args.resume_from
+        if args.resume_from_hub:
+            raw = args.resume_from_hub
+            if ":" in raw and not raw.startswith("checkpoint-"):
+                hub_repo, ckpt_name = raw.split(":", 1)
+            else:
+                hub_repo, ckpt_name = "AlCampbell/catan-llm-sft-v1", raw
+            resume_from = _download_hub_checkpoint(hub_repo, ckpt_name, OUT_DIR)
+
         adapter = args.adapter
         if not args.skip_train and adapter is None:
             from catan_llm.training.qlora import run_qlora_sft
@@ -136,14 +180,18 @@ def main() -> int:
             train_report = run_qlora_sft(
                 REPO_ROOT / "configs" / "qwen3.5-9b-qlora.yaml",
                 train_file=DATA_DIR / "train.jsonl",
-                val_file=DATA_DIR / "val.jsonl",
+                val_file="" if args.skip_eval else (DATA_DIR / "val.jsonl"),
                 output_dir=OUT_DIR,
                 max_steps=args.max_steps,
                 max_samples=args.max_samples,
+                resume_from=resume_from,
                 repo_root=REPO_ROOT,
             )
             report["train"] = train_report.as_dict()
             adapter = Path(train_report.checkpoint or (OUT_DIR / "adapter"))
+        elif adapter is None and resume_from is not None:
+            # Gate-only / smoke: Hub Trainer checkpoint is a loadable PEFT adapter.
+            adapter = Path(resume_from)
         elif adapter is None:
             adapter = OUT_DIR / "adapter"
 

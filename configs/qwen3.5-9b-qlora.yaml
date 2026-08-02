@@ -65,6 +65,9 @@ train:
   save_steps: 200
   save_total_limit: 3
   report_to: none
+  # Mid-run resume insurance: upload each checkpoint-* to Hub (requires HF_TOKEN).
+  # Override/disable with env CATAN_HUB_CHECKPOINT_REPO (empty string disables).
+  hub_checkpoint_repo: AlCampbell/catan-llm-sft-v1
   # TRL / SFTTrainer — assistant tokens only (do not also enable completion_only_loss).
   assistant_only_loss: true
 

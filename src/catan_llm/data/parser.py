@@ -13,6 +13,8 @@ from catanatron.models.enums import Action
 FALLBACK_POLICY = "first_legal"
 
 _JSON_RE = re.compile(r"\{.*\}", re.DOTALL)
+_THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL | re.IGNORECASE)
+_THINK_OPEN_RE = re.compile(r"<think>.*", re.DOTALL | re.IGNORECASE)
 
 
 @dataclass
@@ -25,8 +27,16 @@ class ParseResult:
     raw: str = ""
 
 
+def strip_thinking(text: str) -> str:
+    """Remove Qwen3 think blocks so the JSON action is visible to the parser."""
+    cleaned = _THINK_RE.sub("", text)
+    # Unclosed think (generation truncated mid-reasoning).
+    cleaned = _THINK_OPEN_RE.sub("", cleaned)
+    return cleaned.strip()
+
+
 def extract_json_object(text: str) -> dict[str, Any] | None:
-    text = text.strip()
+    text = strip_thinking(text)
     try:
         obj = json.loads(text)
         if isinstance(obj, dict):

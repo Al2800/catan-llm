@@ -8,17 +8,37 @@ from typing import Any, Callable
 from catan_llm.training.masking import load_qwen_config, qwen_model_name, qwen_revision
 
 
+def _apply_chat_template(tokenizer: Any, messages: list[dict[str, str]], **kwargs: Any) -> str:
+    """Apply chat template; disable Qwen3 thinking when the template supports it."""
+    if not getattr(tokenizer, "chat_template", None):
+        system = next((m["content"] for m in messages if m["role"] == "system"), "")
+        user = next((m["content"] for m in messages if m["role"] == "user"), "")
+        return f"system: {system}\nuser: {user}\nassistant:"
+    try:
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            enable_thinking=False,
+            **kwargs,
+        )
+    except TypeError:
+        # Older / non-Qwen templates reject enable_thinking.
+        return tokenizer.apply_chat_template(messages, tokenize=False, **kwargs)
+
+
 def load_peft_generator(
     adapter_dir: Path | str,
     *,
     config_path: Path | str | None = None,
-    max_new_tokens: int = 128,
+    max_new_tokens: int = 256,
     max_prompt_tokens: int = 3072,
 ) -> tuple[Any, Any, Callable[[str, str], str]]:
     """Return (model, tokenizer, complete_fn) for an adapter checkpoint."""
     import torch
     from peft import PeftModel
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+    from catan_llm.data.parser import strip_thinking
 
     adapter_dir = Path(adapter_dir)
     cfg = load_qwen_config(Path(config_path) if config_path else None)
@@ -69,12 +89,9 @@ def load_peft_generator(
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ]
-        if getattr(tokenizer, "chat_template", None):
-            prompt = tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
-            )
-        else:
-            prompt = f"system: {system}\nuser: {user}\nassistant:"
+        prompt = _apply_chat_template(
+            tokenizer, messages, add_generation_prompt=True
+        )
         inputs = tokenizer(prompt, return_tensors="pt").to(device)
         if inputs["input_ids"].shape[-1] > max_prompt_tokens:
             inputs["input_ids"] = inputs["input_ids"][:, -max_prompt_tokens:]
@@ -89,6 +106,7 @@ def load_peft_generator(
                 pad_token_id=tokenizer.pad_token_id,
             )
         gen = out[0, inputs["input_ids"].shape[-1] :]
-        return tokenizer.decode(gen, skip_special_tokens=True)
+        text = tokenizer.decode(gen, skip_special_tokens=True)
+        return strip_thinking(text)
 
     return model, tokenizer, complete
