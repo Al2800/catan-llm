@@ -69,12 +69,19 @@ def build_assistant_only_labels(
 
     prompt_messages = messages[:-1]
     if hasattr(tokenizer, "apply_chat_template") and getattr(tokenizer, "chat_template", None):
-        text = tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=False
-        )
-        prompt_text = tokenizer.apply_chat_template(
-            prompt_messages, tokenize=False, add_generation_prompt=True
-        )
+        # Qwen3.5 defaults to an open <think> header; that makes the prompt a
+        # non-prefix of the full chat (empty </think> is inserted before the
+        # assistant JSON). Disable thinking so labels supervise the JSON only.
+        def _tmpl(msgs: list[dict[str, str]], **kwargs: Any) -> str:
+            try:
+                return tokenizer.apply_chat_template(
+                    msgs, tokenize=False, enable_thinking=False, **kwargs
+                )
+            except TypeError:
+                return tokenizer.apply_chat_template(msgs, tokenize=False, **kwargs)
+
+        text = _tmpl(messages, add_generation_prompt=False)
+        prompt_text = _tmpl(prompt_messages, add_generation_prompt=True)
         full_ids = tokenizer(text, add_special_tokens=False)["input_ids"]
         prompt_ids = tokenizer(prompt_text, add_special_tokens=False)["input_ids"]
     else:

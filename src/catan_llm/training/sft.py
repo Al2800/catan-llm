@@ -119,12 +119,12 @@ def local_complete_fn_from_checkpoint(checkpoint_dir: Path, max_new_tokens: int 
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ]
-        if getattr(tokenizer, "chat_template", None):
-            prompt = tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
-            )
-        else:
-            prompt = f"system: {system}\nuser: {user}\nassistant:"
+        from catan_llm.training.peft_infer import _apply_chat_template
+        from catan_llm.data.parser import strip_thinking
+
+        prompt = _apply_chat_template(
+            tokenizer, messages, add_generation_prompt=True
+        )
         inputs = tokenizer(prompt, return_tensors="pt").to(device)
         with torch.no_grad():
             out = model.generate(
@@ -134,6 +134,6 @@ def local_complete_fn_from_checkpoint(checkpoint_dir: Path, max_new_tokens: int 
                 pad_token_id=tokenizer.eos_token_id,
             )
         gen = out[0][inputs["input_ids"].shape[-1] :]
-        return tokenizer.decode(gen, skip_special_tokens=True)
+        return strip_thinking(tokenizer.decode(gen, skip_special_tokens=True))
 
     return complete
