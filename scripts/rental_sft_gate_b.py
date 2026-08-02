@@ -189,6 +189,9 @@ def main() -> int:
             )
             report["train"] = train_report.as_dict()
             adapter = Path(train_report.checkpoint or (OUT_DIR / "adapter"))
+        elif adapter is None and resume_from is not None:
+            # Gate-only / smoke: Hub Trainer checkpoint is a loadable PEFT adapter.
+            adapter = Path(resume_from)
         elif adapter is None:
             adapter = OUT_DIR / "adapter"
 
