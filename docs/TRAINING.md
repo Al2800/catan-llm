@@ -112,6 +112,14 @@ bash scripts/rental_sft_gate_b_job.sh \
 Note: live `hf jobs ssh` upload only works if the Job was started with `--ssh`.
 The in-trainer Hub callback does **not** need SSH.
 
+### Qwen3.5 thinking / Gate B
+
+Qwen3.5 chat templates default to an open `<think>` header. Gate B inference
+must call `apply_chat_template(..., enable_thinking=False)` (see
+`peft_infer.py`); otherwise `max_new_tokens` is burned inside the think block and
+parse rate collapses to 0. The 1400-step 8-game smoke hit exactly that failure
+mode before the fix.
+
 ## Gate B after train
 
 ```bash
